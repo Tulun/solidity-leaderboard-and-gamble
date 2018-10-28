@@ -4,7 +4,8 @@
   "description": "Leaderboard and game setup",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "compile": "node compile.js"
   },
   "repository": {
     "type": "git",

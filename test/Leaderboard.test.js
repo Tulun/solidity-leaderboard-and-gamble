@@ -61,5 +61,7 @@ describe("Leaderboard", () => {
     catch (err) {
       assert(err);
     };
-  })
+  });
+
+  
 });

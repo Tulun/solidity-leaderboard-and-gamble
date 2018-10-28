@@ -1,5 +1,6 @@
 pragma solidity ^0.4.24;
 
+
 contract Leaderboard {
   // initialize variables
   struct Player {
@@ -11,21 +12,32 @@ contract Leaderboard {
     uint numDisputedGames;
   }
   
+  struct Game {
+    uint id;
+    address firstPlayer;
+    address secondPlayer;
+    uint bet;
+    address winner;
+  }
+    
   Player[] public players;
+  Game public game;
   address private owner;
   mapping(address => bool) public playersAdded;
-  string public game;
+  uint public gameId;
+  bool public gameInProgress;
   
   modifier onlyOwner() {
     require(msg.sender == owner);
     _;
   }
   
-  constructor(string leaderboardGame) public {
-    game = leaderboardGame;
+  constructor() public {
     owner = msg.sender;
+    gameId = 0;
+    gameInProgress = false;
   }
-  
+    
   function addPlayer(string name) public {
     // Make sure this particular address hasn't been added yet.
     require(!playersAdded[msg.sender]);
@@ -41,5 +53,18 @@ contract Leaderboard {
     });
     
     players.push(newPlayer);
+  }
+    
+  function createGame() public payable {
+    require(!gameInProgress);
+    gameInProgress = true;
+    
+    game = Game({
+        id: gameId++,
+        firstPlayer: msg.sender,
+        secondPlayer: address(0),
+        bet: msg.value,
+        winner: address(0)
+    });
   }
 }
