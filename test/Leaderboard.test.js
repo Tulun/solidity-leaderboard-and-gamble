@@ -11,7 +11,7 @@ beforeEach( async () => {
   accounts = await web3.eth.getAccounts();
 
   leaderboard = await new web3.eth.Contract(JSON.parse(compiledLeaderboard.interface))
-    .deploy({ data: compiledLeaderboard.bytecode })
+    .deploy({ data: compiledLeaderboard.bytecode, arguments: ["Ping Pong"] })
     .send({ from: accounts[0], gas: '1000000' });
 
 });
