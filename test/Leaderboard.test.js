@@ -19,5 +19,22 @@ beforeEach( async () => {
 describe("Leaderboard", () => {
   it("deploys a contract", () => {
     assert.ok(leaderboard.options.address);
+  });
+
+  it("Adds new players to the contract", async () => {
+    await leaderboard.methods.addPlayer("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+    
+    await leaderboard.methods.addPlayer("George").send({
+      from: accounts[1],
+      gas: '1000000'
+    });
+
+    const p1 = await leaderboard.methods.players(0).call();
+    const p2 = await leaderboard.methods.players(1).call();
+    assert.equal(p1.name, "Jason");
+    assert.equal(p2.name, "George");
   })
 });
