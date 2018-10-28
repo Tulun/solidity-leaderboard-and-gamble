@@ -7,7 +7,7 @@ const buildPath = path.resolve(__dirname, "build");
 // Remove build folder.
 fs.removeSync(buildPath);
 
-const leaderboardPath = path.resolve(__dirname, "contracts", "Leaderboard.sol");
+const leaderboardPath = path.resolve(__dirname, "contracts", "leaderboard", "Leaderboard.sol");
 const source = fs.readFileSync(leaderboardPath, "utf8");
 const output = solc.compile(source, 1).contracts;
 
