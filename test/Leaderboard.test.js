@@ -36,5 +36,23 @@ describe("Leaderboard", () => {
     const p2 = await leaderboard.methods.players(1).call();
     assert.equal(p1.name, "Jason");
     assert.equal(p2.name, "George");
+  });
+
+  it("Prevents a new player from being added if their address exists", async () => {
+    await leaderboard.methods.addPlayer("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    try {
+      await leaderboard.methods.addPlayer("Jason").send({
+        from: accounts[0],
+        gas: '1000000'
+      });
+      assert.fail("Second player was added when it shouldn't.")
+    } 
+    catch (err) {
+      assert(err);
+    };
   })
 });
