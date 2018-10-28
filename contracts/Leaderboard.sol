@@ -14,14 +14,16 @@ contract Leaderboard {
   Player[] public players;
   address private owner;
   mapping(address => bool) public playersAdded;
+  string public game;
   
   modifier onlyOwner() {
     require(msg.sender == owner);
     _;
   }
   
-  constructor() public {
-      owner = msg.sender;
+  constructor(string leaderboardGame) public {
+    game = leaderboardGame;
+    owner = msg.sender;
   }
   
   function addPlayer(string name) public {

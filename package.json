@@ -1,10 +1,10 @@
 {
   "name": "ping-pong",
   "version": "1.0.0",
-  "description": "## Things I should be able to do V1",
+  "description": "Leaderboard and game setup",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
