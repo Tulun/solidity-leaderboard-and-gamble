@@ -1,0 +1,31 @@
+{
+  "name": "ping-pong",
+  "version": "1.0.0",
+  "description": "## Things I should be able to do V1",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tulun/solidity-player-tournaments.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Tulun/solidity-player-tournaments/issues"
+  },
+  "homepage": "https://github.com/Tulun/solidity-player-tournaments#readme",
+  "dependencies": {
+    "dotenv": "^6.1.0",
+    "fs-extra": "^7.0.0",
+    "ganache-cli": "^6.1.8",
+    "solc": "^0.4.25",
+    "truffle": "^4.1.14",
+    "truffle-hdwallet-provider": "^0.0.6",
+    "web3": "1.0.0-beta.35"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
+  }
+}
