@@ -19,3 +19,5 @@ for (let contract in output) {
     output[contract]
   );
 }
+
+console.log('compile successful!');
