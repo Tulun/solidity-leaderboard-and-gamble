@@ -36,7 +36,14 @@ describe("Leaderboard", () => {
     const p2 = await leaderboard.methods.players(1).call();
     assert.equal(p1.name, "Jason");
     assert.equal(p2.name, "George");
+
+    const p1Added = await leaderboard.methods.playersAdded(p1.playerAddress);
+    const p2Added = await leaderboard.methods.playersAdded(p2.playerAddress);
+
+    assert(p1Added);
+    assert(p2Added);
   });
+  
 
   it("Prevents a new player from being added if their address exists", async () => {
     await leaderboard.methods.addPlayer("Jason").send({
