@@ -124,5 +124,33 @@ describe("Leaderboard", () => {
       assert(err);
     }
   })
+
+  it("Add a second player to a game", async () => {
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.addPlayerToLeaderboard("George").send({
+      from: accounts[1],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.createGame().send({
+      from: accounts[0],
+      gas: "1000000",
+      value: web3.utils.toWei("0.1", "ether")
+    });
+
+    await leaderboard.methods.addSecondPlayerToGame().send({
+      from: accounts[1],
+      gas: "1000000",
+      value: web3.utils.toWei("0.1", "ether")
+    })
+
+    const game = await leaderboard.methods.game().call();
+    assert.equal(game.secondPlayer, accounts[1]);
+    assert.equal(game.pot, web3.utils.toWei("0.2", "ether"));
+  })
   
 });
