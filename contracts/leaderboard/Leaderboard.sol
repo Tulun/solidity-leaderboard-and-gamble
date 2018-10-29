@@ -1,7 +1,12 @@
 pragma solidity ^0.4.24;
 
+// import "../math/SafeMath.sol";
+
 
 contract Leaderboard {
+  // using SafeMath for uint256;
+
+
   // initialize variables
   struct Player {
     string name;
@@ -17,6 +22,7 @@ contract Leaderboard {
     address firstPlayer;
     address secondPlayer;
     uint bet;
+    uint pot;
     address winner;
   }
     
@@ -57,14 +63,17 @@ contract Leaderboard {
     
   function createGame() public payable {
     require(!gameInProgress);
+    require(msg.value > 0);
+
     gameInProgress = true;
-    
     game = Game({
         id: gameId++,
         firstPlayer: msg.sender,
         secondPlayer: address(0),
         bet: msg.value,
+        pot: msg.value,
         winner: address(0)
     });
   }
+
 }
