@@ -81,7 +81,9 @@ describe("Leaderboard", () => {
     assert.equal(game.id, 1);
     assert.equal(game.firstPlayer, accounts[0]);
     assert.equal(game.secondPlayer, NULL_ADDRESS);
+    assert.equal(game.bet, web3.utils.toWei("0.1", "ether"));
     assert.equal(game.pot, web3.utils.toWei("0.1", "ether"));
+    assert.equal(game.winner, NULL_ADDRESS);
   })
   
 });

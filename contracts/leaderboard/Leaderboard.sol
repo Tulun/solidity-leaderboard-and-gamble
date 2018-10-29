@@ -10,18 +10,18 @@ contract Leaderboard {
   struct Player {
     string name;
     address playerAddress;
-    uint wins;
-    uint losses;
-    uint ties;
-    uint numDisputedGames;
+    uint256 wins;
+    uint256 losses;
+    uint256 ties;
+    uint256 numDisputedGames;
   }
   
   struct Game {
-    uint id;
+    uint256 id;
     address firstPlayer;
     address secondPlayer;
-    uint bet;
-    uint pot;
+    uint256 bet;
+    uint256 pot;
     address winner;
   }
     
@@ -29,7 +29,7 @@ contract Leaderboard {
   Game public game;
   address private owner;
   mapping(address => bool) public playersAdded;
-  uint public gameId;
+  uint256 public gameId;
   bool public gameInProgress;
   string public gameType;
   
