@@ -16,7 +16,7 @@ const input = {
   }
 }
 
-const output = solc.compile(input, 1);
+const output = solc.compile(input, 1).contracts;
 console.log('o', output);
 fs.ensureDirSync(buildPath);
 

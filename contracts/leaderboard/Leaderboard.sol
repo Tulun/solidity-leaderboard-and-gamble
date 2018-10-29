@@ -31,6 +31,7 @@ contract Leaderboard {
   mapping(address => bool) public playersAdded;
   uint public gameId;
   bool public gameInProgress;
+  string public gameType;
   
   modifier onlyOwner() {
     require(msg.sender == owner);
@@ -52,8 +53,9 @@ contract Leaderboard {
     _;
   }
   
-  constructor() public {
+  constructor(string _gameType) public {
     owner = msg.sender;
+    gameType = _gameType;
     gameId = 0;
     gameInProgress = false;
   }
@@ -67,12 +69,12 @@ contract Leaderboard {
     
     playersAdded[msg.sender] = true;
     Player memory newPlayer = Player({
-        name: name,
-        playerAddress: msg.sender,
-        wins: 0,
-        losses: 0,
-        ties: 0,
-        numDisputedGames: 0
+      name: name,
+      playerAddress: msg.sender,
+      wins: 0,
+      losses: 0,
+      ties: 0,
+      numDisputedGames: 0
     });
     
     players.push(newPlayer);
@@ -81,12 +83,12 @@ contract Leaderboard {
   function createGame() public payable playerInLeaderboard noGame {
     gameInProgress = true;
     game = Game({
-        id: gameId++,
-        firstPlayer: msg.sender,
-        secondPlayer: address(0),
-        bet: msg.value,
-        pot: msg.value,
-        winner: address(0)
+      id: gameId++,
+      firstPlayer: msg.sender,
+      secondPlayer: address(0),
+      bet: msg.value,
+      pot: msg.value,
+      winner: address(0)
     });
   }
 
@@ -100,6 +102,7 @@ contract Leaderboard {
   }
 
   function testEmptyString(bytes str) private pure returns (bool) {
+    // If the byte length is zero, we know the string is empty. 
     return bytes(str).length > 0;
   }
 
