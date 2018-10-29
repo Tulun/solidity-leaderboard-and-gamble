@@ -22,12 +22,12 @@ describe("Leaderboard", () => {
   });
 
   it("Adds new players to the contract", async () => {
-    await leaderboard.methods.addPlayer("Jason").send({
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
       from: accounts[0],
       gas: '1000000'
     });
     
-    await leaderboard.methods.addPlayer("George").send({
+    await leaderboard.methods.addPlayerToLeaderboard("George").send({
       from: accounts[1],
       gas: '1000000'
     });
@@ -46,13 +46,13 @@ describe("Leaderboard", () => {
   
 
   it("Prevents a new player from being added if their address exists", async () => {
-    await leaderboard.methods.addPlayer("Jason").send({
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
       from: accounts[0],
       gas: '1000000'
     });
 
     try {
-      await leaderboard.methods.addPlayer("Jason").send({
+      await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
         from: accounts[0],
         gas: '1000000'
       });

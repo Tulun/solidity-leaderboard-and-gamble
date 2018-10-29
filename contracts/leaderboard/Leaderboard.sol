@@ -43,7 +43,7 @@ contract Leaderboard {
     gameInProgress = false;
   }
     
-  function addPlayer(string name) public {
+  function addPlayerToLeaderboard(string name) public {
     // Make sure this particular address hasn't been added yet.
     require(!playersAdded[msg.sender]);
     
@@ -62,6 +62,7 @@ contract Leaderboard {
     
   function createGame() public payable {
     require(!gameInProgress);
+    require(playersAdded[msg.sender]);
     require(msg.value > 0);
 
     gameInProgress = true;
@@ -73,6 +74,17 @@ contract Leaderboard {
         pot: msg.value,
         winner: address(0)
     });
+  }
+
+  function addSecondPlayerToGame() public payable {
+    require(gameInProgress);
+    require(playersAdded[msg.sender]);
+    require(msg.sender != game.firstPlayer);
+    require(game.secondPlayer == address(0));
+    require(msg.value == game.bet);
+    
+    game.secondPlayer = msg.sender;
+    game.pot = game.pot + msg.value;
   }
 
 }
