@@ -28,7 +28,6 @@ console.log('o', output);
 fs.ensureDirSync(buildPath);
 
 for (let contract in output) {
-  console.log('c', contract);
   const filename = contract.split(".")[0];
   fs.outputJsonSync(
     path.resolve(buildPath, `${filename}.json`),
