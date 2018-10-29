@@ -36,6 +36,21 @@ contract Leaderboard {
     require(msg.sender == owner);
     _;
   }
+
+  modifier playerInLeaderboard() {
+    require(playersAdded[msg.sender]);
+    _;
+  }
+
+  modifier gameStarted() {
+    require(gameInProgress);
+    _;
+  }
+
+  modifier noGame() {
+    require(!gameInProgress);
+    _;
+  }
   
   constructor() public {
     owner = msg.sender;
@@ -44,6 +59,9 @@ contract Leaderboard {
   }
     
   function addPlayerToLeaderboard(string name) public {
+    bytes memory tempEmptyStringTest = bytes(name);
+    require(testEmptyString(bytes(name)));
+    require(tempEmptyStringTest.length > 0);
     // Make sure this particular address hasn't been added yet.
     require(!playersAdded[msg.sender]);
     
@@ -60,11 +78,7 @@ contract Leaderboard {
     players.push(newPlayer);
   }
     
-  function createGame() public payable {
-    require(!gameInProgress);
-    require(playersAdded[msg.sender]);
-    require(msg.value > 0);
-
+  function createGame() public payable playerInLeaderboard noGame {
     gameInProgress = true;
     game = Game({
         id: gameId++,
@@ -76,15 +90,17 @@ contract Leaderboard {
     });
   }
 
-  function addSecondPlayerToGame() public payable {
-    require(gameInProgress);
-    require(playersAdded[msg.sender]);
+  function addSecondPlayerToGame() public payable playerInLeaderboard gameStarted {
     require(msg.sender != game.firstPlayer);
     require(game.secondPlayer == address(0));
     require(msg.value == game.bet);
     
     game.secondPlayer = msg.sender;
     game.pot = game.pot + msg.value;
+  }
+
+  function testEmptyString(bytes str) private pure returns (bool) {
+    return bytes(str).length > 0;
   }
 
 }
