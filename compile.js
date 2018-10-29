@@ -8,7 +8,7 @@ const buildPath = path.resolve(__dirname, "build");
 fs.removeSync(buildPath);
 
 const leaderboardPath = path.resolve(__dirname, "contracts", "leaderboard", "Leaderboard.sol");
-const safeMathPath = path.resolve(__dirname, "contracts", "leaderboard", "math", "SafeMath.sol");
+const safeMathPath = path.resolve(__dirname, "contracts", "leaderboard", "SafeMath.sol");
 const input = {
   sources: {
     "Leaderboard.sol": fs.readFileSync(leaderboardPath, "utf8"),
@@ -16,7 +16,7 @@ const input = {
   }
 }
 
-const output = solc.compile(input, 1).contracts;
+const output = solc.compile(input, 1);
 console.log('o', output);
 fs.ensureDirSync(buildPath);
 
