@@ -152,5 +152,87 @@ describe("Leaderboard", () => {
     assert.equal(game.secondPlayer, accounts[1]);
     assert.equal(game.pot, web3.utils.toWei("0.2", "ether"));
   })
+
+  it("Prevents a 3rd player from entering the game", async () => {
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.addPlayerToLeaderboard("George").send({
+      from: accounts[1],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.addPlayerToLeaderboard("Tim").send({
+      from: accounts[2],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.createGame().send({
+      from: accounts[0],
+      gas: "1000000",
+      value: web3.utils.toWei("0.1", "ether")
+    });
+
+    await leaderboard.methods.addSecondPlayerToGame().send({
+      from: accounts[1],
+      gas: "1000000",
+      value: web3.utils.toWei("0.1", "ether")
+    })
+
+    try {
+      await leaderboard.methods.addSecondPlayerToGame().send({
+        from: accounts[2],
+        gas: "1000000",
+        value: web3.utils.toWei("0.1", "ether")
+      });
+      assert.fail("addSecondPlayerToGame call didn't throw an error, although a third player tried to come in.");
+    }
+    catch (err) {
+      assert(err);
+    }
+  })
+
+  it("Forces a user to send the correct bet value", async  () => {
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.addPlayerToLeaderboard("George").send({
+      from: accounts[1],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.createGame().send({
+      from: accounts[0],
+      gas: "1000000",
+      value: web3.utils.toWei("0.1", "ether")
+    });
+    
+    try {
+      await leaderboard.methods.addSecondPlayerToGame().send({
+        from: accounts[1],
+        gas: "1000000",
+        value: web3.utils.toWei("0.2", "ether")
+      })
+      assert.fail("Second player was added without sending in the correct bet amount")
+    }
+    catch (err) {
+      assert(err)
+    }
+
+    try {
+      await leaderboard.methods.addSecondPlayerToGame().send({
+        from: accounts[1],
+        gas: "1000000",
+      });
+      assert.fail("Second player was added without sending any bet amount");
+    }
+    catch (err) {
+      assert(err)
+    }
+  })
   
 });
