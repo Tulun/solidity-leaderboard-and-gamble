@@ -54,6 +54,7 @@ contract Leaderboard {
   }
   
   constructor(string _gameType) public {
+    require(testEmptyString(bytes(_gameType)));
     owner = msg.sender;
     gameType = _gameType;
     gameId = 0;
@@ -82,8 +83,9 @@ contract Leaderboard {
     
   function createGame() public payable playerInLeaderboard noGame {
     gameInProgress = true;
+    gameId++;
     game = Game({
-      id: gameId++,
+      id: gameId,
       firstPlayer: msg.sender,
       secondPlayer: address(0),
       bet: msg.value,

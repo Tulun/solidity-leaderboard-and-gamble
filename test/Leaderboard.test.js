@@ -6,6 +6,8 @@ const web3 = new Web3(ganache.provider());
 const compiledLeaderboard = require('../build/Leaderboard.json');
 let accounts, leaderboard;
 
+const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
+
 beforeEach( async () => {
   // Get a list of all accounts;
   accounts = await web3.eth.getAccounts();
@@ -63,5 +65,23 @@ describe("Leaderboard", () => {
     };
   });
 
+  it("Can create a game", async () => {
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.createGame().send({
+      from: accounts[0],
+      gas: "1000000",
+      value: web3.utils.toWei("0.1", "ether")
+    })
+
+    const game = await leaderboard.methods.game().call();
+    assert.equal(game.id, 1);
+    assert.equal(game.firstPlayer, accounts[0]);
+    assert.equal(game.secondPlayer, NULL_ADDRESS);
+    assert.equal(game.pot, web3.utils.toWei("0.1", "ether"));
+  })
   
 });
