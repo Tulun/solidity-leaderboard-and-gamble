@@ -23,6 +23,8 @@ contract Leaderboard {
     uint256 bet;
     uint256 pot;
     address winner;
+    string declaredWinnerFirstPlayer;
+    string declaredWinnerSecondPlayer;
   }
     
   Player[] public players;
@@ -90,7 +92,9 @@ contract Leaderboard {
       secondPlayer: address(0),
       bet: msg.value,
       pot: msg.value,
-      winner: address(0)
+      winner: address(0),
+      declaredWinnerFirstPlayer: "",
+      declaredWinnerSecondPlayer: ""
     });
   }
 
