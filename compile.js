@@ -15,16 +15,23 @@ fs.removeSync(buildPath);
 //   'LMS.sol': fs.readFileSync('LMS.sol', 'utf8')
 // };
 // let compiledContract = solc.compile({sources: input}, 1);
-const leaderboardPath = path.resolve(__dirname, "contracts", "leaderboard", "Leaderboard.sol");
-const source = fs.readFileSync(leaderboardPath, "utf8");
-const output = solc.compile(source, 1).contracts;
 
+const leaderboardPath = path.resolve(__dirname, "contracts", "leaderboard", "Leaderboard.sol");
+const safeMathPath = path.resolve(__dirname, "contracts", "math", "SafeMath.sol");
+const input = {
+  "Leaderboard.sol": fs.readFileSync(leaderboardPath, "utf8"),
+  "SafeMath.sol": fs.readFileSync(safeMathPath, "utf8")
+}
+
+const output = solc.compile({sources: input}, 1).contracts;
+console.log('o', output);
 fs.ensureDirSync(buildPath);
 
 for (let contract in output) {
-  console.log(contract, output)
+  console.log('c', contract);
+  const filename = contract.split(".")[0];
   fs.outputJsonSync(
-    path.resolve(buildPath, `${contract.replace(":", "")}.json`),
+    path.resolve(buildPath, `${filename}.json`),
     output[contract]
   );
 }
