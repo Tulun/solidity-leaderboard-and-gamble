@@ -84,6 +84,45 @@ describe("Leaderboard", () => {
     assert.equal(game.bet, web3.utils.toWei("0.1", "ether"));
     assert.equal(game.pot, web3.utils.toWei("0.1", "ether"));
     assert.equal(game.winner, NULL_ADDRESS);
+  });
+
+  it("prevents a second game from being created while one exists", async () => {
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.createGame().send({
+      from: accounts[0],
+      gas: "1000000",
+      value: web3.utils.toWei("0.1", "ether")
+    });
+
+    try {
+      await leaderboard.methods.createGame().send({
+        from: accounts[0],
+        gas: "1000000",
+        value: web3.utils.toWei("0.1", "ether")
+      })
+      assert.fail("Second game call was successful when it should throw.");
+    }
+    catch (err) {
+      assert(err);
+    }
+  });
+
+  it("prevents a user from creating a game if they haven't registered on the board", async () => {
+    try {
+      await leaderboard.methods.createGame().send({
+        from: accounts[0],
+        gas: "1000000",
+        value: web3.utils.toWei("0.1", "ether")
+      });
+      assert.fail("Game was created without a user registering.");
+    }
+    catch (err) {
+      assert(err);
+    }
   })
   
 });
