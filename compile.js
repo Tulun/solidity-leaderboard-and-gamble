@@ -7,23 +7,16 @@ const buildPath = path.resolve(__dirname, "build");
 // Remove build folder.
 fs.removeSync(buildPath);
 
-// var input = {
-//   'strings.sol': fs.readFileSync('strings.sol', 'utf8'),
-//   'StringLib.sol': fs.readFileSync('StringLib.sol', 'utf8'),
-//   'Killable.sol': fs.readFileSync('Killable.sol', 'utf8'),
-//   'Ownable.sol': fs.readFileSync('Ownable.sol', 'utf8'),
-//   'LMS.sol': fs.readFileSync('LMS.sol', 'utf8')
-// };
-// let compiledContract = solc.compile({sources: input}, 1);
-
 const leaderboardPath = path.resolve(__dirname, "contracts", "leaderboard", "Leaderboard.sol");
-const safeMathPath = path.resolve(__dirname, "contracts", "math", "SafeMath.sol");
+const safeMathPath = path.resolve(__dirname, "contracts", "leaderboard", "math", "SafeMath.sol");
 const input = {
-  "Leaderboard.sol": fs.readFileSync(leaderboardPath, "utf8"),
-  "SafeMath.sol": fs.readFileSync(safeMathPath, "utf8")
+  sources: {
+    "Leaderboard.sol": fs.readFileSync(leaderboardPath, "utf8"),
+    "SafeMath.sol": fs.readFileSync(safeMathPath, "utf8")
+  }
 }
 
-const output = solc.compile({sources: input}, 1).contracts;
+const output = solc.compile(input, 1).contracts;
 console.log('o', output);
 fs.ensureDirSync(buildPath);
 

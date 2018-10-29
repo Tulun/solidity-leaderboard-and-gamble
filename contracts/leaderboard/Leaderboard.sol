@@ -1,11 +1,10 @@
 pragma solidity ^0.4.24;
 
-// import "../math/SafeMath.sol";
+import "./SafeMath.sol";
 
 
 contract Leaderboard {
-  // using SafeMath for uint256;
-
+  using SafeMath for uint256;
 
   // initialize variables
   struct Player {
