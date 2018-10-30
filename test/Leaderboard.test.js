@@ -233,6 +233,54 @@ describe("Leaderboard", () => {
     catch (err) {
       assert(err)
     }
+  });
+
+  it("Allows users to choose a winner", async () => {
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.addPlayerToLeaderboard("George").send({
+      from: accounts[1],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.createGame().send({
+      from: accounts[0],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.addSecondPlayerToGame().send({
+      from: accounts[1],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.chooseWinner("first").send({
+      from: accounts[0],
+      gas: "1000000",
+    });
+
+    const game = await leaderboard.methods.game().call();
+    console.log(game);
+    assert.equal(game.declaredWinnerFirstPlayer, "first");
+
+    // it("Prevents a user who is not playing the game from changing the winner", async () => {
+    //   // From a player not even on the board
+    //   try {
+    //     await leaderboard.methods.chooseWinner("first").send({
+    //       from: accounts[2],
+    //       gas: "1000000"
+    //     });
+    //     assert.fail("A person not on the board was able to choose the winner.")
+    //   } 
+    //   catch(err) {
+    //     assert(err);
+    //   };
+    // });
+
   })
   
 });

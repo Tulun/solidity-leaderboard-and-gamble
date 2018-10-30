@@ -33,6 +33,7 @@ contract Leaderboard is ReentrancyGuard {
   Game public game;
   address private owner;
   mapping(address => bool) public playersAdded;
+  mapping(address => Player) public player;
   mapping(address => uint256) public playerIndex;
   uint256 public gameId;
   bool public gameInProgress;
@@ -117,7 +118,7 @@ contract Leaderboard is ReentrancyGuard {
   // _declaredWinner must be either: first or second.
   function chooseWinner(string _declaredWinner) public playerInLeaderboard gameStarted {
     require(msg.sender == game.firstPlayer || msg.sender == game.secondPlayer);
-    bool correctString = StringUtils.equal(_declaredWinner,"first")  || StringUtils.equal(_declaredWinner ,"second");
+    bool correctString = StringUtils.equal(_declaredWinner, "first") || StringUtils.equal(_declaredWinner, "second");
     require(correctString);
 
     if (msg.sender == game.firstPlayer) {
@@ -137,12 +138,11 @@ contract Leaderboard is ReentrancyGuard {
     }
   }
   
-  function payoutWinner(address _player) private playerInLeaderboard gameStarted nonReentrant {
-      Player storage p1 = players[playerIndex[game.firstPlayer]];
-      Player storage p2 = players[playerIndex[game.secondPlayer]];
-    if (game.pot > 0) {
-      _player.transfer(game.pot);
-    }
+  function payoutWinner(address _player) private playerInLeaderboard gameStarted {
+    Player storage p1 = players[playerIndex[game.firstPlayer]];
+    Player storage p2 = players[playerIndex[game.secondPlayer]];
+    uint256 pot = game.pot;
+
     if (_player == game.firstPlayer) {
       p1.wins++;
       p2.losses++;
@@ -157,11 +157,10 @@ contract Leaderboard is ReentrancyGuard {
     game.declaredWinnerFirstPlayer = "";
     game.declaredWinnerSecondPlayer = "";
     gameInProgress = false;
-
+    
     if (pot > 0) {
       _player.transfer(pot);
     }
-
   }
 
   function testEmptyString(bytes str) private pure returns (bool) {
