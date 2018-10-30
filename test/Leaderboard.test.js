@@ -264,8 +264,14 @@ describe("Leaderboard", () => {
       gas: "1000000",
     });
 
+    await leaderboard.methods.chooseWinner("second").send({
+      from: accounts[1],
+      gas: "1000000",
+    });
+
     const game = await leaderboard.methods.game().call();
     assert.equal(game.declaredWinnerFirstPlayer, "first");
+    assert.equal(game.declaredWinnerSecondPlayer, "second");
 
   });
 
@@ -325,6 +331,86 @@ describe("Leaderboard", () => {
     catch(err) {
       assert(err);
     };
+  });
+
+  it("Pays out the firstPlayer when both users agree on firstPlayer", async () => {
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.addPlayerToLeaderboard("George").send({
+      from: accounts[1],
+      gas: '1000000'
+    });
+
+    const initialBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
+
+    await leaderboard.methods.createGame().send({
+      from: accounts[0],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.addSecondPlayerToGame().send({
+      from: accounts[1],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.chooseWinner("first").send({
+      from: accounts[0],
+      gas: "1000000",
+    });
+
+    await leaderboard.methods.chooseWinner("first").send({
+      from: accounts[1],
+      gas: "1000000",
+    });
+
+    const newBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
+
+    assert(newBalance > initialBalance);
+  });
+
+  it("Pays out the secondPlayer when both users agree on secondPlayer", async () => {
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.addPlayerToLeaderboard("George").send({
+      from: accounts[1],
+      gas: '1000000'
+    });
+
+    const initialBalance = await web3.eth.getBalance(accounts[1]) / 10 ** 18;
+
+    await leaderboard.methods.createGame().send({
+      from: accounts[0],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.addSecondPlayerToGame().send({
+      from: accounts[1],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.chooseWinner("second").send({
+      from: accounts[0],
+      gas: "1000000",
+    });
+
+    await leaderboard.methods.chooseWinner("second").send({
+      from: accounts[1],
+      gas: "1000000",
+    });
+
+    const newBalance = await web3.eth.getBalance(accounts[1]) / 10 ** 18;
+
+    assert(newBalance > initialBalance);
   });
   
 });
