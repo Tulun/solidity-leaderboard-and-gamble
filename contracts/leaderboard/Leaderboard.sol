@@ -5,25 +5,25 @@ import "./StringUtils.sol";
 import "./ReentrancyGuard.sol";
 
 
-contract Leaderboard is ReentrancyGuard {
-  using SafeMath for uint256;
+contract Leaderboard is ReentrancyGuard, StringUtils {
+  using SafeMath for uint;
 
   // initialize variables
   struct Player {
     string name;
     address playerAddress;
-    uint256 wins;
-    uint256 losses;
-    uint256 ties;
-    uint256 numDisputedGames;
+    uint wins;
+    uint losses;
+    uint ties;
+    uint numDisputedGames;
   }
   
   struct Game {
-    uint256 id;
+    uint id;
     address firstPlayer;
     address secondPlayer;
-    uint256 bet;
-    uint256 pot;
+    uint bet;
+    uint pot;
     address winner;
     string declaredWinnerFirstPlayer;
     string declaredWinnerSecondPlayer;
@@ -34,8 +34,8 @@ contract Leaderboard is ReentrancyGuard {
   address private owner;
   mapping(address => bool) public playersAdded;
   mapping(address => Player) public player;
-  mapping(address => uint256) public playerIndex;
-  uint256 public gameId;
+  mapping(address => uint) public playerIndex;
+  uint public gameId;
   bool public gameInProgress;
   string public gameType;
   
@@ -141,7 +141,7 @@ contract Leaderboard is ReentrancyGuard {
   function payoutWinner(address _player) private playerInLeaderboard gameStarted {
     Player storage p1 = players[playerIndex[game.firstPlayer]];
     Player storage p2 = players[playerIndex[game.secondPlayer]];
-    uint256 pot = game.pot;
+    uint pot = game.pot;
 
     if (_player == game.firstPlayer) {
       p1.wins++;
@@ -157,7 +157,6 @@ contract Leaderboard is ReentrancyGuard {
     game.declaredWinnerFirstPlayer = "";
     game.declaredWinnerSecondPlayer = "";
     gameInProgress = false;
-    
     if (pot > 0) {
       _player.transfer(pot);
     }

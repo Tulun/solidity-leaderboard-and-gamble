@@ -21,15 +21,16 @@ const input = {
   }
 }
 
-const output = solc.compile(input, 1).contracts;
-console.log('o', output);
+const output = solc.compile(input, 1);
+console.log('o', output, output.contracts);
+const contracts = output.contracts;
 fs.ensureDirSync(buildPath);
 
-for (let contract in output) {
+for (let contract in contracts) {
   const filename = contract.split(".")[0];
   fs.outputJsonSync(
     path.resolve(buildPath, `${filename}.json`),
-    output[contract]
+    contracts[contract]
   );
 }
 

@@ -14,13 +14,14 @@ beforeEach( async () => {
 
   leaderboard = await new web3.eth.Contract(JSON.parse(compiledLeaderboard.interface))
     .deploy({ data: compiledLeaderboard.bytecode, arguments: ["Ping Pong"] })
-    .send({ from: accounts[0], gas: '1000000' });
+    .send({ from: accounts[0], gas: '2000000' });
 
 });
 
 describe("Leaderboard", () => {
   it("deploys a contract", () => {
     assert.ok(leaderboard.options.address);
+    console.log(leaderboard)
   });
 
   it("Adds new players to the contract", async () => {
