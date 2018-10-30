@@ -1,9 +1,11 @@
 pragma solidity ^0.4.24;
 
 import "./SafeMath.sol";
+import "./StringUtils.sol";
+import "./ReentrancyGuard.sol";
 
 
-contract Leaderboard {
+contract Leaderboard is ReentrancyGuard {
   using SafeMath for uint256;
 
   // initialize variables
@@ -31,6 +33,7 @@ contract Leaderboard {
   Game public game;
   address private owner;
   mapping(address => bool) public playersAdded;
+  mapping(address => uint256) public playerIndex;
   uint256 public gameId;
   bool public gameInProgress;
   string public gameType;
@@ -81,6 +84,7 @@ contract Leaderboard {
     });
     
     players.push(newPlayer);
+    playerIndex[msg.sender] = players.length - 1;
   }
     
   function createGame() public payable playerInLeaderboard noGame {
@@ -105,6 +109,59 @@ contract Leaderboard {
     
     game.secondPlayer = msg.sender;
     game.pot = game.pot + msg.value;
+  }
+
+    // There is no technical oracle on this contract -- this is mostly a handshake deal.
+  // Both players will have to send a message in declaring who won. If there is a dispute
+  // The game will end up returning the individual funds.
+  // _declaredWinner must be either: first or second.
+  function chooseWinner(string _declaredWinner) public playerInLeaderboard gameStarted {
+    require(msg.sender == game.firstPlayer || msg.sender == game.secondPlayer);
+    bool correctString = StringUtils.equal(_declaredWinner,"first")  || StringUtils.equal(_declaredWinner ,"second");
+    require(correctString);
+
+    if (msg.sender == game.firstPlayer) {
+      game.declaredWinnerFirstPlayer = _declaredWinner;
+    }
+    
+    if (msg.sender == game.secondPlayer) {
+      game.declaredWinnerSecondPlayer = _declaredWinner;  
+    }
+    
+    if (StringUtils.equal(game.declaredWinnerFirstPlayer, game.declaredWinnerSecondPlayer)) {
+      if (StringUtils.equal(game.declaredWinnerFirstPlayer, "first")) {
+        payoutWinner(game.firstPlayer);
+      } else {
+        payoutWinner(game.secondPlayer);
+      }
+    }
+  }
+  
+  function payoutWinner(address _player) private playerInLeaderboard gameStarted nonReentrant {
+      Player storage p1 = players[playerIndex[game.firstPlayer]];
+      Player storage p2 = players[playerIndex[game.secondPlayer]];
+    if (game.pot > 0) {
+      _player.transfer(game.pot);
+    }
+    if (_player == game.firstPlayer) {
+      p1.wins++;
+      p2.losses++;
+    } else {
+      p1.losses++;
+      p2.wins++;
+    }
+    game.firstPlayer = address(0);
+    game.secondPlayer = address(0);
+    game.bet = 0;
+    game.pot = 0;
+    game.declaredWinnerFirstPlayer = "";
+    game.declaredWinnerSecondPlayer = "";
+    gameInProgress = false;
+
+    if (pot > 0) {
+      _player.transfer(pot);
+    }
+
   }
 
   function testEmptyString(bytes str) private pure returns (bool) {
