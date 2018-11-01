@@ -530,6 +530,28 @@ describe("Leaderboard", () => {
       const gameInProgress = await leaderboard.methods.gameInProgress().call();
       assert.equal(gameInProgress, false);
     });
-  })
+
+    it("Refunds the user in the event of a dispute", async () => {
+      const initialBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
+      await leaderboard.methods.chooseWinner("second").send({
+        from: accounts[0],
+        gas: "1000000",
+      });
+  
+      await leaderboard.methods.chooseWinner("first").send({
+        from: accounts[1],
+        gas: "1000000",
+      });
+      
+      const finalBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
+      
+      // FB - IB should be approximately 1 ether as 1 ether is refunded.
+      const difference = finalBalance - initialBalance;
+      const withinOneRange = 1.02 > difference && difference > 0.98; 
+  
+      assert(withinOneRange);
+    });
+    
+  });
   
 });
