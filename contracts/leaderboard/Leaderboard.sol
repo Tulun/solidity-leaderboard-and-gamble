@@ -38,6 +38,7 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
   uint public gameId;
   bool public gameInProgress;
   string public gameType;
+  uint public totalNumPlayers;
   
   modifier onlyOwner() {
     require(msg.sender == owner);
@@ -86,6 +87,7 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     
     players.push(newPlayer);
     playerIndex[msg.sender] = players.length - 1;
+    totalNumPlayers++;
   }
     
   function createGame() public payable playerInLeaderboard noGame {
