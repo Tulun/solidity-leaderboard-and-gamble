@@ -245,91 +245,59 @@ describe("Leaderboard", () => {
       const game = await leaderboard.methods.game().call();
       assert.equal(game.declaredWinnerSecondPlayer, "second");
     });
-  })
+
+    it("Allows first, second, or tie as the chooseWinner string", async() => {
+      await leaderboard.methods.addSecondPlayerToGame().send({
+        from: accounts[1],
+        gas: "1000000",
+        value: web3.utils.toWei("1", "ether")
+      });
   
-  it("Only allows first, second, or tie as the chooseWinner string", async() => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.addSecondPlayerToGame().send({
-      from: accounts[1],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.chooseWinner("first").send({
-      from: accounts[0],
-      gas: "1000000",
-    });
-
-    let game = await leaderboard.methods.game().call();
-    assert.equal(game.declaredWinnerFirstPlayer, "first");
-
-    await leaderboard.methods.chooseWinner("second").send({
-      from: accounts[0],
-      gas: "1000000",
-    });
-
-    game = await leaderboard.methods.game().call();
-    assert.equal(game.declaredWinnerFirstPlayer, "second");
-
-    await leaderboard.methods.chooseWinner("tie").send({
-      from: accounts[0],
-      gas: "1000000",
-    });
-
-    game = await leaderboard.methods.game().call();
-    assert.equal(game.declaredWinnerFirstPlayer, "tie");
-
-  })
-
-  it("Prevents a user from sending in an incorrect string to chooseWinner", async () => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.addSecondPlayerToGame().send({
-      from: accounts[1],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    try {
-      await leaderboard.methods.chooseWinner("third").send({
+      await leaderboard.methods.chooseWinner("first").send({
         from: accounts[0],
         gas: "1000000",
       });
-      assert.fail("A string that isn't first or second or tie was accepted.")
-    }
-    catch(err) {
-      assert(err);
-    }
+  
+      let game = await leaderboard.methods.game().call();
+      assert.equal(game.declaredWinnerFirstPlayer, "first");
+  
+      await leaderboard.methods.chooseWinner("second").send({
+        from: accounts[0],
+        gas: "1000000",
+      });
+  
+      game = await leaderboard.methods.game().call();
+      assert.equal(game.declaredWinnerFirstPlayer, "second");
+  
+      await leaderboard.methods.chooseWinner("tie").send({
+        from: accounts[0],
+        gas: "1000000",
+      });
+  
+      game = await leaderboard.methods.game().call();
+      assert.equal(game.declaredWinnerFirstPlayer, "tie");
+    });
+
+    it("Prevents a user from sending in an incorrect string to chooseWinner", async () => {
+      await leaderboard.methods.addSecondPlayerToGame().send({
+        from: accounts[1],
+        gas: "1000000",
+        value: web3.utils.toWei("1", "ether")
+      });
+  
+      try {
+        await leaderboard.methods.chooseWinner("third").send({
+          from: accounts[0],
+          gas: "1000000",
+        });
+        assert.fail("A string that isn't first or second or tie was accepted.")
+      }
+      catch(err) {
+        assert(err);
+      }
+    });
   })
+  
 
   it("Prevents a user who is not playing the game from changing the winner", async () => {
     await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
