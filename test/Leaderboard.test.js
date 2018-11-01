@@ -378,305 +378,158 @@ describe("Leaderboard", () => {
   
       assert(newBalance > initialBalance);
     });
-  })
 
-  it("Game returns to initial state after payout", async () => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
+    it("Game returns to initial state after payout", async () => {
+      await leaderboard.methods.chooseWinner("second").send({
+        from: accounts[0],
+        gas: "1000000",
+      });
+  
+      await leaderboard.methods.chooseWinner("second").send({
+        from: accounts[1],
+        gas: "1000000",
+      });
+  
+      const game = await leaderboard.methods.game().call();
+      assert.equal(game.id, 1);
+      assert.equal(game.firstPlayer, NULL_ADDRESS);
+      assert.equal(game.secondPlayer, NULL_ADDRESS);
+      assert.equal(game.bet, 0);
+      assert.equal(game.pot, 0);
+      assert.equal(game.winner, NULL_ADDRESS);
+      assert.equal(game.declaredWinnerFirstPlayer, "");
+      assert.equal(game.declaredWinnerSecondPlayer, "");
+  
+      const gameInProgress = await leaderboard.methods.gameInProgress().call();
+      assert.equal(gameInProgress, false);
     });
 
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
+    it("After payout, winner gets a win added, loser gets a loss added", async () => {
+      await leaderboard.methods.chooseWinner("second").send({
+        from: accounts[0],
+        gas: "1000000",
+      });
+  
+      await leaderboard.methods.chooseWinner("second").send({
+        from: accounts[1],
+        gas: "1000000",
+      });
+  
+      const p1 = await leaderboard.methods.players(0).call();
+      const p2 = await leaderboard.methods.players(1).call();
+  
+      assert.equal(p2.wins, 1);
+      assert.equal(p1.wins, 0);
+      assert.equal(p1.losses, 1);
+      assert.equal(p2.losses, 0);
     });
 
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
+    it("If both members agree it's a tie, they both get a tie added to their stats", async () => {
+      await leaderboard.methods.chooseWinner("tie").send({
+        from: accounts[0],
+        gas: "1000000",
+      });
+  
+      await leaderboard.methods.chooseWinner("tie").send({
+        from: accounts[1],
+        gas: "1000000",
+      });
+  
+      const p1 = await leaderboard.methods.players(0).call();
+      const p2 = await leaderboard.methods.players(1).call();
+  
+      assert.equal(p2.ties, 1);
+      assert.equal(p1.ties, 1);
     });
 
-    await leaderboard.methods.addSecondPlayerToGame().send({
-      from: accounts[1],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
+    it("In the event of a tie, game should be reset", async () => {
+      await leaderboard.methods.chooseWinner("tie").send({
+        from: accounts[0],
+        gas: "1000000",
+      });
+  
+      await leaderboard.methods.chooseWinner("tie").send({
+        from: accounts[1],
+        gas: "1000000",
+      });
+  
+      const game = await leaderboard.methods.game().call();
+      assert.equal(game.id, 1);
+      assert.equal(game.firstPlayer, NULL_ADDRESS);
+      assert.equal(game.secondPlayer, NULL_ADDRESS);
+      assert.equal(game.bet, 0);
+      assert.equal(game.pot, 0);
+      assert.equal(game.winner, NULL_ADDRESS);
+      assert.equal(game.declaredWinnerFirstPlayer, "");
+      assert.equal(game.declaredWinnerSecondPlayer, "");
+  
+      const gameInProgress = await leaderboard.methods.gameInProgress().call();
+      assert.equal(gameInProgress, false);
     });
 
-    await leaderboard.methods.chooseWinner("second").send({
-      from: accounts[0],
-      gas: "1000000",
+    it("Refunds the user in the event of a tie", async () => {
+      const initialBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
+      await leaderboard.methods.chooseWinner("tie").send({
+        from: accounts[0],
+        gas: "1000000",
+      });
+  
+      await leaderboard.methods.chooseWinner("tie").send({
+        from: accounts[1],
+        gas: "1000000",
+      });
+      
+      const finalBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
+      
+      // FB - IB should be approximately 1 ether as 1 ether is refunded.
+      const difference = finalBalance - initialBalance;
+      const withinOneRange = 1.02 > difference && difference > 0.98; 
+
+      assert(withinOneRange);
+    })
+
+    it("If both members disagree on outcome, they get a disputed outcome added to their stats", async () => {
+      await leaderboard.methods.chooseWinner("first").send({
+        from: accounts[0],
+        gas: "1000000",
+      });
+  
+      await leaderboard.methods.chooseWinner("second").send({
+        from: accounts[1],
+        gas: "1000000",
+      });
+  
+      const p1 = await leaderboard.methods.players(0).call();
+      const p2 = await leaderboard.methods.players(1).call();
+  
+      assert.equal(p2.numDisputedGames, 1);
+      assert.equal(p1.numDisputedGames, 1);
     });
 
-    await leaderboard.methods.chooseWinner("second").send({
-      from: accounts[1],
-      gas: "1000000",
+    it("In the event of a dispute, game should be reset", async () => {
+      await leaderboard.methods.chooseWinner("first").send({
+        from: accounts[0],
+        gas: "1000000",
+      });
+  
+      await leaderboard.methods.chooseWinner("tie").send({
+        from: accounts[1],
+        gas: "1000000",
+      });
+      
+      const game = await leaderboard.methods.game().call();
+      assert.equal(game.id, 1);
+      assert.equal(game.firstPlayer, NULL_ADDRESS);
+      assert.equal(game.secondPlayer, NULL_ADDRESS);
+      assert.equal(game.bet, 0);
+      assert.equal(game.pot, 0);
+      assert.equal(game.winner, NULL_ADDRESS);
+      assert.equal(game.declaredWinnerFirstPlayer, "");
+      assert.equal(game.declaredWinnerSecondPlayer, "");
+  
+      const gameInProgress = await leaderboard.methods.gameInProgress().call();
+      assert.equal(gameInProgress, false);
     });
-
-    const game = await leaderboard.methods.game().call();
-    assert.equal(game.id, 1);
-    assert.equal(game.firstPlayer, NULL_ADDRESS);
-    assert.equal(game.secondPlayer, NULL_ADDRESS);
-    assert.equal(game.bet, 0);
-    assert.equal(game.pot, 0);
-    assert.equal(game.winner, NULL_ADDRESS);
-    assert.equal(game.declaredWinnerFirstPlayer, "");
-    assert.equal(game.declaredWinnerSecondPlayer, "");
-
-    const gameInProgress = await leaderboard.methods.gameInProgress().call();
-    assert.equal(gameInProgress, false);
-  });
-
-  it("After payout, winner gets a win added, loser gets a loss added", async () => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.addSecondPlayerToGame().send({
-      from: accounts[1],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.chooseWinner("second").send({
-      from: accounts[0],
-      gas: "1000000",
-    });
-
-    await leaderboard.methods.chooseWinner("second").send({
-      from: accounts[1],
-      gas: "1000000",
-    });
-
-    const p1 = await leaderboard.methods.players(0).call();
-    const p2 = await leaderboard.methods.players(1).call();
-
-    assert.equal(p2.wins, 1);
-    assert.equal(p1.wins, 0);
-    assert.equal(p1.losses, 1);
-    assert.equal(p2.losses, 0);
-  });
-
-  it("If both members agree it's a tie, they both get a tie added to their stats", async () => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.addSecondPlayerToGame().send({
-      from: accounts[1],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.chooseWinner("tie").send({
-      from: accounts[0],
-      gas: "1000000",
-    });
-
-    await leaderboard.methods.chooseWinner("tie").send({
-      from: accounts[1],
-      gas: "1000000",
-    });
-
-    const p1 = await leaderboard.methods.players(0).call();
-    const p2 = await leaderboard.methods.players(1).call();
-
-    assert.equal(p2.ties, 1);
-    assert.equal(p1.ties, 1);
-  });
-
-  it("In the event of a tie, game should be reset", async () => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.addSecondPlayerToGame().send({
-      from: accounts[1],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.chooseWinner("tie").send({
-      from: accounts[0],
-      gas: "1000000",
-    });
-
-    await leaderboard.methods.chooseWinner("tie").send({
-      from: accounts[1],
-      gas: "1000000",
-    });
-
-    const game = await leaderboard.methods.game().call();
-    assert.equal(game.id, 1);
-    assert.equal(game.firstPlayer, NULL_ADDRESS);
-    assert.equal(game.secondPlayer, NULL_ADDRESS);
-    assert.equal(game.bet, 0);
-    assert.equal(game.pot, 0);
-    assert.equal(game.winner, NULL_ADDRESS);
-    assert.equal(game.declaredWinnerFirstPlayer, "");
-    assert.equal(game.declaredWinnerSecondPlayer, "");
-
-    const gameInProgress = await leaderboard.methods.gameInProgress().call();
-    assert.equal(gameInProgress, false);
-  });
-
-  it("Refunds the user in the event of a tie", async () => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.addSecondPlayerToGame().send({
-      from: accounts[1],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.chooseWinner("tie").send({
-      from: accounts[0],
-      gas: "1000000",
-    });
-
-    await leaderboard.methods.chooseWinner("tie").send({
-      from: accounts[1],
-      gas: "1000000",
-    });
-
-
-  })
-
-  it("If both members disagree on outcome, they get a disputed outcome added to their stats", async () => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.addSecondPlayerToGame().send({
-      from: accounts[1],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.chooseWinner("first").send({
-      from: accounts[0],
-      gas: "1000000",
-    });
-
-    await leaderboard.methods.chooseWinner("second").send({
-      from: accounts[1],
-      gas: "1000000",
-    });
-
-    const p1 = await leaderboard.methods.players(0).call();
-    const p2 = await leaderboard.methods.players(1).call();
-
-    assert.equal(p2.numDisputedGames, 1);
-    assert.equal(p1.numDisputedGames, 1);
-  })
-
-  it("In the event of a dispute, game should be reset", async () => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.addSecondPlayerToGame().send({
-      from: accounts[1],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.chooseWinner("first").send({
-      from: accounts[0],
-      gas: "1000000",
-    });
-
-    await leaderboard.methods.chooseWinner("tie").send({
-      from: accounts[1],
-      gas: "1000000",
-    });
-    
-    const game = await leaderboard.methods.game().call();
-    assert.equal(game.id, 1);
-    assert.equal(game.firstPlayer, NULL_ADDRESS);
-    assert.equal(game.secondPlayer, NULL_ADDRESS);
-    assert.equal(game.bet, 0);
-    assert.equal(game.pot, 0);
-    assert.equal(game.winner, NULL_ADDRESS);
-    assert.equal(game.declaredWinnerFirstPlayer, "");
-    assert.equal(game.declaredWinnerSecondPlayer, "");
-
-    const gameInProgress = await leaderboard.methods.gameInProgress().call();
-    assert.equal(gameInProgress, false);
   })
   
 });
