@@ -92,15 +92,15 @@ describe("Leaderboard", () => {
       await leaderboard.methods.createGame().send({
         from: accounts[0],
         gas: "1000000",
-        value: web3.utils.toWei("0.1", "ether")
+        value: web3.utils.toWei("1", "ether")
       })
   
       const game = await leaderboard.methods.game().call();
       assert.equal(game.id, 1);
       assert.equal(game.firstPlayer, accounts[0]);
       assert.equal(game.secondPlayer, NULL_ADDRESS);
-      assert.equal(game.bet, web3.utils.toWei("0.1", "ether"));
-      assert.equal(game.pot, web3.utils.toWei("0.1", "ether"));
+      assert.equal(game.bet, web3.utils.toWei("1", "ether"));
+      assert.equal(game.pot, web3.utils.toWei("1", "ether"));
       assert.equal(game.winner, NULL_ADDRESS);
     });
   })
@@ -125,7 +125,7 @@ describe("Leaderboard", () => {
       await leaderboard.methods.createGame().send({
         from: accounts[0],
         gas: "1000000",
-        value: web3.utils.toWei("0.1", "ether")
+        value: web3.utils.toWei("1", "ether")
       })
     });
 
@@ -134,7 +134,7 @@ describe("Leaderboard", () => {
         await leaderboard.methods.createGame().send({
           from: accounts[0],
           gas: "1000000",
-          value: web3.utils.toWei("0.1", "ether")
+          value: web3.utils.toWei("1", "ether")
         })
         assert.fail("Second game call was successful when it should throw.");
       }
@@ -148,7 +148,7 @@ describe("Leaderboard", () => {
         await leaderboard.methods.createGame().send({
           from: accounts[3],
           gas: "1000000",
-          value: web3.utils.toWei("0.1", "ether")
+          value: web3.utils.toWei("1", "ether")
         });
         assert.fail("Game was created without a user registering.");
       }
@@ -161,141 +161,91 @@ describe("Leaderboard", () => {
       await leaderboard.methods.addSecondPlayerToGame().send({
         from: accounts[1],
         gas: "1000000",
-        value: web3.utils.toWei("0.1", "ether")
+        value: web3.utils.toWei("1", "ether")
       })
   
       const game = await leaderboard.methods.game().call();
       assert.equal(game.secondPlayer, accounts[1]);
-      assert.equal(game.pot, web3.utils.toWei("0.2", "ether"));
+      assert.equal(game.pot, web3.utils.toWei("2", "ether"));
     })
 
     it("Prevents a 3rd player from entering the game", async () => {
       await leaderboard.methods.addSecondPlayerToGame().send({
         from: accounts[1],
         gas: "1000000",
-        value: web3.utils.toWei("0.1", "ether")
+        value: web3.utils.toWei("1", "ether")
       })
   
       try {
         await leaderboard.methods.addSecondPlayerToGame().send({
           from: accounts[2],
           gas: "1000000",
-          value: web3.utils.toWei("0.1", "ether")
+          value: web3.utils.toWei("1", "ether")
         });
         assert.fail("addSecondPlayerToGame call didn't throw an error, although a third player tried to come in.");
       }
       catch (err) {
         assert(err);
       }
-    })
-  })
-
-  it("Forces a user to send the correct bet value", async  () => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
     });
 
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
+    it("Forces a user to send the correct bet value", async  () => {
+      try {
+        await leaderboard.methods.addSecondPlayerToGame().send({
+          from: accounts[1],
+          gas: "1000000",
+          value: web3.utils.toWei("2", "ether")
+        })
+        assert.fail("Second player was added without sending in the correct bet amount")
+      }
+      catch (err) {
+        assert(err)
+      }
+  
+      try {
+        await leaderboard.methods.addSecondPlayerToGame().send({
+          from: accounts[1],
+          gas: "1000000",
+        });
+        assert.fail("Second player was added without sending any bet amount");
+      }
+      catch (err) {
+        assert(err)
+      }
     });
 
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("0.1", "ether")
-    });
-    
-    try {
+    it("Allows first player to choose a winner", async () => {
       await leaderboard.methods.addSecondPlayerToGame().send({
         from: accounts[1],
         gas: "1000000",
-        value: web3.utils.toWei("0.2", "ether")
-      })
-      assert.fail("Second player was added without sending in the correct bet amount")
-    }
-    catch (err) {
-      assert(err)
-    }
+        value: web3.utils.toWei("1", "ether")
+      });
+  
+      await leaderboard.methods.chooseWinner("first").send({
+        from: accounts[0],
+        gas: "1000000",
+      });
+  
+      const game = await leaderboard.methods.game().call();
+      assert.equal(game.declaredWinnerFirstPlayer, "first");
+    });
 
-    try {
+    it("Allows second player to choose a winner", async () => {
       await leaderboard.methods.addSecondPlayerToGame().send({
+        from: accounts[1],
+        gas: "1000000",
+        value: web3.utils.toWei("1", "ether")
+      });
+  
+      await leaderboard.methods.chooseWinner("second").send({
         from: accounts[1],
         gas: "1000000",
       });
-      assert.fail("Second player was added without sending any bet amount");
-    }
-    catch (err) {
-      assert(err)
-    }
-  });
-
-  it("Allows first player to choose a winner", async () => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
+  
+      const game = await leaderboard.methods.game().call();
+      assert.equal(game.declaredWinnerSecondPlayer, "second");
     });
-
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.addSecondPlayerToGame().send({
-      from: accounts[1],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.chooseWinner("first").send({
-      from: accounts[0],
-      gas: "1000000",
-    });
-
-    const game = await leaderboard.methods.game().call();
-    assert.equal(game.declaredWinnerFirstPlayer, "first");
-
-  });
-
-  it("Allows second player to choose a winner", async () => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.addSecondPlayerToGame().send({
-      from: accounts[1],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.chooseWinner("second").send({
-      from: accounts[1],
-      gas: "1000000",
-    });
-
-    const game = await leaderboard.methods.game().call();
-    assert.equal(game.declaredWinnerSecondPlayer, "second");
-
-  });
+  })
   
   it("Only allows first, second, or tie as the chooseWinner string", async() => {
     await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
