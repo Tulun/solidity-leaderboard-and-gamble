@@ -136,8 +136,6 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     // If both strings aren't empty, check if they match or not.
     if (testEmptyString(bytes(game.declaredWinnerFirstPlayer)) &&
      testEmptyString(bytes(game.declaredWinnerSecondPlayer))) {
-      Player storage p1 = players[playerIndex[game.firstPlayer]];
-      Player storage p2 = players[playerIndex[game.secondPlayer]];
 
       if (StringUtils.equal(game.declaredWinnerFirstPlayer, game.declaredWinnerSecondPlayer)) {
         if (StringUtils.equal(game.declaredWinnerFirstPlayer, "first")) {
@@ -148,13 +146,13 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
         }
         
         if (StringUtils.equal(game.declaredWinnerFirstPlayer, "tie")) {
-          endGameInTie(p1, p2);
+          endGameInTie();
         }
         
       }
       
       if (!(StringUtils.equal(game.declaredWinnerFirstPlayer, game.declaredWinnerSecondPlayer)) ) {
-          endGameWithDispute(p1, p2);
+          endGameWithDispute();
       }
       
     }
@@ -179,27 +177,35 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     resetGame();
   }
   
-  function endGameInTie(Player _p1, Player _p2) private playerInLeaderboard gameStarted {
-    _p1.ties++;
-    _p2.ties++;
+  function endGameInTie() private playerInLeaderboard gameStarted {
+    Player storage p1 = players[playerIndex[game.firstPlayer]];
+    Player storage p2 = players[playerIndex[game.secondPlayer]];
+    p1.ties++;
+    p2.ties++;
     
-    refundPlayers(_p1, _p2);
+    refundPlayers();
     resetGame();
   }
   
-  function endGameWithDispute(Player _p1, Player _p2) private playerInLeaderboard gameStarted {
-    _p1.numDisputedGames++;
-    _p2.numDisputedGames++;
+  function endGameWithDispute() private playerInLeaderboard gameStarted {
+    Player storage p1 = players[playerIndex[game.firstPlayer]];
+    Player storage p2 = players[playerIndex[game.secondPlayer]];
+
+    p1.numDisputedGames++;
+    p2.numDisputedGames++;
     
-    refundPlayers(_p1, _p2);
+    refundPlayers();
     resetGame();
   }
   
-  function refundPlayers(Player _p1, Player _p2) private playerInLeaderboard gameStarted {
+  function refundPlayers() private playerInLeaderboard gameStarted {
+    Player storage p1 = players[playerIndex[game.firstPlayer]];
+    Player storage p2 = players[playerIndex[game.secondPlayer]];
+
     uint refund = game.pot / 2;
     if (game.pot > 0) {
-      _p1.playerAddress.transfer(refund);
-      _p2.playerAddress.transfer(refund);
+      p1.playerAddress.transfer(refund);
+      p2.playerAddress.transfer(refund);
     }
   }
   

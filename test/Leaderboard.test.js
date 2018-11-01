@@ -612,6 +612,86 @@ describe("Leaderboard", () => {
     assert.equal(p1.wins, 0);
     assert.equal(p1.losses, 1);
     assert.equal(p2.losses, 0);
+  });
+
+  it("If both members agree it's a tie, they both get a tie added to their stats", async () => {
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.addPlayerToLeaderboard("George").send({
+      from: accounts[1],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.createGame().send({
+      from: accounts[0],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.addSecondPlayerToGame().send({
+      from: accounts[1],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.chooseWinner("tie").send({
+      from: accounts[0],
+      gas: "1000000",
+    });
+
+    await leaderboard.methods.chooseWinner("tie").send({
+      from: accounts[1],
+      gas: "1000000",
+    });
+
+    const p1 = await leaderboard.methods.players(0).call();
+    const p2 = await leaderboard.methods.players(1).call();
+
+    assert.equal(p2.ties, 1);
+    assert.equal(p1.ties, 1);
+  });
+
+  it("If both members disagree on outcome, they get a disputed outcome added to their stats", async () => {
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.addPlayerToLeaderboard("George").send({
+      from: accounts[1],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.createGame().send({
+      from: accounts[0],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.addSecondPlayerToGame().send({
+      from: accounts[1],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.chooseWinner("first").send({
+      from: accounts[0],
+      gas: "1000000",
+    });
+
+    await leaderboard.methods.chooseWinner("second").send({
+      from: accounts[1],
+      gas: "1000000",
+    });
+
+    const p1 = await leaderboard.methods.players(0).call();
+    const p2 = await leaderboard.methods.players(1).call();
+
+    assert.equal(p2.numDisputedGames, 1);
+    assert.equal(p1.numDisputedGames, 1);
   })
   
 });
