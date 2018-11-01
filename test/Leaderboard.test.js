@@ -14,7 +14,7 @@ beforeEach( async () => {
 
   leaderboard = await new web3.eth.Contract(JSON.parse(compiledLeaderboard.interface))
     .deploy({ data: compiledLeaderboard.bytecode, arguments: ["Ping Pong"] })
-    .send({ from: accounts[0], gas: '2000000' });
+    .send({ from: accounts[0], gas: '3000000' });
 
 });
 
@@ -240,7 +240,7 @@ describe("Leaderboard", () => {
     }
   });
 
-  it("Allows users to choose a winner", async () => {
+  it("Allows first player to choose a winner", async () => {
     await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
       from: accounts[0],
       gas: '1000000'
@@ -268,16 +268,92 @@ describe("Leaderboard", () => {
       gas: "1000000",
     });
 
+    const game = await leaderboard.methods.game().call();
+    assert.equal(game.declaredWinnerFirstPlayer, "first");
+
+  });
+
+  it("Allows second player to choose a winner", async () => {
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.addPlayerToLeaderboard("George").send({
+      from: accounts[1],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.createGame().send({
+      from: accounts[0],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.addSecondPlayerToGame().send({
+      from: accounts[1],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
     await leaderboard.methods.chooseWinner("second").send({
       from: accounts[1],
       gas: "1000000",
     });
 
     const game = await leaderboard.methods.game().call();
-    assert.equal(game.declaredWinnerFirstPlayer, "first");
     assert.equal(game.declaredWinnerSecondPlayer, "second");
 
   });
+  
+  it("Only allows first, second, or tie as the chooseWinner string", async() => {
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.addPlayerToLeaderboard("George").send({
+      from: accounts[1],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.createGame().send({
+      from: accounts[0],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.addSecondPlayerToGame().send({
+      from: accounts[1],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.chooseWinner("first").send({
+      from: accounts[0],
+      gas: "1000000",
+    });
+
+    let game = await leaderboard.methods.game().call();
+    assert.equal(game.declaredWinnerFirstPlayer, "first");
+
+    await leaderboard.methods.chooseWinner("second").send({
+      from: accounts[0],
+      gas: "1000000",
+    });
+
+    game = await leaderboard.methods.game().call();
+    assert.equal(game.declaredWinnerFirstPlayer, "second");
+
+    await leaderboard.methods.chooseWinner("tie").send({
+      from: accounts[0],
+      gas: "1000000",
+    });
+
+    game = await leaderboard.methods.game().call();
+    assert.equal(game.declaredWinnerFirstPlayer, "tie");
+
+  })
 
   it("Prevents a user from sending in an incorrect string to chooseWinner", async () => {
     await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
@@ -307,7 +383,7 @@ describe("Leaderboard", () => {
         from: accounts[0],
         gas: "1000000",
       });
-      assert.fail("A string that isn't first or second was accepted.")
+      assert.fail("A string that isn't first or second or tie was accepted.")
     }
     catch(err) {
       assert(err);
