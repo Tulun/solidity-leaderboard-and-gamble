@@ -654,6 +654,50 @@ describe("Leaderboard", () => {
     assert.equal(p1.ties, 1);
   });
 
+  it("In the event of a tie, game should be reset", async () => {
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.addPlayerToLeaderboard("George").send({
+      from: accounts[1],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.createGame().send({
+      from: accounts[0],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.addSecondPlayerToGame().send({
+      from: accounts[1],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.chooseWinner("tie").send({
+      from: accounts[0],
+      gas: "1000000",
+    });
+
+    await leaderboard.methods.chooseWinner("tie").send({
+      from: accounts[1],
+      gas: "1000000",
+    });
+    
+    const game = await leaderboard.methods.game().call();
+    assert.equal(game.id, 1);
+    assert.equal(game.firstPlayer, NULL_ADDRESS);
+    assert.equal(game.secondPlayer, NULL_ADDRESS);
+    assert.equal(game.bet, 0);
+    assert.equal(game.pot, 0);
+    assert.equal(game.winner, NULL_ADDRESS);
+    assert.equal(game.declaredWinnerFirstPlayer, "");
+    assert.equal(game.declaredWinnerSecondPlayer, "");
+  })
+
   it("If both members disagree on outcome, they get a disputed outcome added to their stats", async () => {
     await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
       from: accounts[0],
