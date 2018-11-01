@@ -570,6 +570,9 @@ describe("Leaderboard", () => {
     assert.equal(game.winner, NULL_ADDRESS);
     assert.equal(game.declaredWinnerFirstPlayer, "");
     assert.equal(game.declaredWinnerSecondPlayer, "");
+
+    const gameInProgress = await leaderboard.methods.gameInProgress().call();
+    assert.equal(gameInProgress, false);
   });
 
   it("After payout, winner gets a win added, loser gets a loss added", async () => {
@@ -686,7 +689,7 @@ describe("Leaderboard", () => {
       from: accounts[1],
       gas: "1000000",
     });
-    
+
     const game = await leaderboard.methods.game().call();
     assert.equal(game.id, 1);
     assert.equal(game.firstPlayer, NULL_ADDRESS);
@@ -696,6 +699,9 @@ describe("Leaderboard", () => {
     assert.equal(game.winner, NULL_ADDRESS);
     assert.equal(game.declaredWinnerFirstPlayer, "");
     assert.equal(game.declaredWinnerSecondPlayer, "");
+
+    const gameInProgress = await leaderboard.methods.gameInProgress().call();
+    assert.equal(gameInProgress, false);
   })
 
   it("If both members disagree on outcome, they get a disputed outcome added to their stats", async () => {
@@ -736,6 +742,53 @@ describe("Leaderboard", () => {
 
     assert.equal(p2.numDisputedGames, 1);
     assert.equal(p1.numDisputedGames, 1);
+  })
+
+  it("In the event of a dispute, game should be reset", async () => {
+    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.addPlayerToLeaderboard("George").send({
+      from: accounts[1],
+      gas: '1000000'
+    });
+
+    await leaderboard.methods.createGame().send({
+      from: accounts[0],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.addSecondPlayerToGame().send({
+      from: accounts[1],
+      gas: "1000000",
+      value: web3.utils.toWei("1", "ether")
+    });
+
+    await leaderboard.methods.chooseWinner("first").send({
+      from: accounts[0],
+      gas: "1000000",
+    });
+
+    await leaderboard.methods.chooseWinner("tie").send({
+      from: accounts[1],
+      gas: "1000000",
+    });
+    
+    const game = await leaderboard.methods.game().call();
+    assert.equal(game.id, 1);
+    assert.equal(game.firstPlayer, NULL_ADDRESS);
+    assert.equal(game.secondPlayer, NULL_ADDRESS);
+    assert.equal(game.bet, 0);
+    assert.equal(game.pot, 0);
+    assert.equal(game.winner, NULL_ADDRESS);
+    assert.equal(game.declaredWinnerFirstPlayer, "");
+    assert.equal(game.declaredWinnerSecondPlayer, "");
+
+    const gameInProgress = await leaderboard.methods.gameInProgress().call();
+    assert.equal(gameInProgress, false);
   })
   
 });
