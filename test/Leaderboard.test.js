@@ -306,145 +306,79 @@ describe("Leaderboard", () => {
       }
     });
   
+    it("Prevents a user who is not playing the game from changing the winner", async () => {
+      await leaderboard.methods.chooseWinner("first").send({
+        from: accounts[0],
+        gas: "1000000",
+      });
+  
+      // From a player not even on the board
+      try {
+        await leaderboard.methods.chooseWinner("first").send({
+          from: accounts[3],
+          gas: "1000000"
+        });
+        assert.fail("A person not on the board was able to choose the winner.")
+      } 
+      catch(err) {
+        assert(err);
+      };
+  
+      // Member adds itself to board, attempts to try.
+      await leaderboard.methods.addPlayerToLeaderboard("Chip").send({
+        from: accounts[3],
+        gas: '1000000'
+      });
+  
+      try {
+        await leaderboard.methods.chooseWinner("first").send({
+          from: accounts[3],
+          gas: "1000000"
+        });
+        assert.fail("A person not in the game was able to choose the winner.")
+      } 
+      catch(err) {
+        assert(err);
+      };
+    });
+
+    it("Pays out the firstPlayer when both users agree on firstPlayer", async () => {
+
+      const initialBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
+  
+      await leaderboard.methods.chooseWinner("first").send({
+        from: accounts[0],
+        gas: "1000000",
+      });
+  
+      await leaderboard.methods.chooseWinner("first").send({
+        from: accounts[1],
+        gas: "1000000",
+      });
+  
+      const newBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
+  
+      assert(newBalance > initialBalance);
+    });
+
+    it("Pays out the secondPlayer when both users agree on secondPlayer", async () => {
+      const initialBalance = await web3.eth.getBalance(accounts[1]) / 10 ** 18;
+  
+      await leaderboard.methods.chooseWinner("second").send({
+        from: accounts[0],
+        gas: "1000000",
+      });
+  
+      await leaderboard.methods.chooseWinner("second").send({
+        from: accounts[1],
+        gas: "1000000",
+      });
+  
+      const newBalance = await web3.eth.getBalance(accounts[1]) / 10 ** 18;
+  
+      assert(newBalance > initialBalance);
+    });
   })
-
-  it("Prevents a user who is not playing the game from changing the winner", async () => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.addSecondPlayerToGame().send({
-      from: accounts[1],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.chooseWinner("first").send({
-      from: accounts[0],
-      gas: "1000000",
-    });
-
-    // From a player not even on the board
-    try {
-      await leaderboard.methods.chooseWinner("first").send({
-        from: accounts[2],
-        gas: "1000000"
-      });
-      assert.fail("A person not on the board was able to choose the winner.")
-    } 
-    catch(err) {
-      assert(err);
-    };
-
-    // Member adds itself to board, attempts to try.
-    await leaderboard.methods.addPlayerToLeaderboard("Tim").send({
-      from: accounts[2],
-      gas: '1000000'
-    });
-
-    try {
-      await leaderboard.methods.chooseWinner("first").send({
-        from: accounts[2],
-        gas: "1000000"
-      });
-      assert.fail("A person not in the game was able to choose the winner.")
-    } 
-    catch(err) {
-      assert(err);
-    };
-  });
-
-  it("Pays out the firstPlayer when both users agree on firstPlayer", async () => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
-    });
-
-    const initialBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
-
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.addSecondPlayerToGame().send({
-      from: accounts[1],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.chooseWinner("first").send({
-      from: accounts[0],
-      gas: "1000000",
-    });
-
-    await leaderboard.methods.chooseWinner("first").send({
-      from: accounts[1],
-      gas: "1000000",
-    });
-
-    const newBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
-
-    assert(newBalance > initialBalance);
-  });
-
-  it("Pays out the secondPlayer when both users agree on secondPlayer", async () => {
-    await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
-      from: accounts[0],
-      gas: '1000000'
-    });
-
-    await leaderboard.methods.addPlayerToLeaderboard("George").send({
-      from: accounts[1],
-      gas: '1000000'
-    });
-
-    const initialBalance = await web3.eth.getBalance(accounts[1]) / 10 ** 18;
-
-    await leaderboard.methods.createGame().send({
-      from: accounts[0],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.addSecondPlayerToGame().send({
-      from: accounts[1],
-      gas: "1000000",
-      value: web3.utils.toWei("1", "ether")
-    });
-
-    await leaderboard.methods.chooseWinner("second").send({
-      from: accounts[0],
-      gas: "1000000",
-    });
-
-    await leaderboard.methods.chooseWinner("second").send({
-      from: accounts[1],
-      gas: "1000000",
-    });
-
-    const newBalance = await web3.eth.getBalance(accounts[1]) / 10 ** 18;
-
-    assert(newBalance > initialBalance);
-  });
 
   it("Game returns to initial state after payout", async () => {
     await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
