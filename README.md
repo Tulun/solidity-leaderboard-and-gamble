@@ -7,11 +7,13 @@
 - [x] Determine winner. (Players should both sign off)
 - [x] Track stats (Win, Losses, Ties, Undetermined )
 - [x] Handle disputes (If both players don't agree, money gets returned)
-- [ ] Timeouts ( Games must be completed within a predetermined period)
-- [] Owner can cancel games and return funds.
-
-## Bonus
-- [] Players can change their name
+- [x] Timeouts ( Games must be completed within a predetermined period)
 
 ## V2
+- [] Multiple games can be played at the same time.
+- [] Players can change their name
+- [] Owner can cancel games and return funds.
+- [] Reset all player stats (seasons)
+
+## V3
 - [ ] Round robin style tournaments

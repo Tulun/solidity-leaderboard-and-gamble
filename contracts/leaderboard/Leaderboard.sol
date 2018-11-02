@@ -161,22 +161,20 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
       
   }
 
-  function closeGameIfTimedout() public playerInLeaderboard gameStarted {
-    if (now >= game.startTime + 1 hours) {
-      Player storage p1 = players[playerIndex[game.firstPlayer]];
-      Player storage p2 = players[playerIndex[game.secondPlayer]];
-      p1.numDisputedGames++;
-      p2.numDisputedGames++;
-      if (game.pot == game.bet) {
-        p1.playerAddress.transfer(game.pot);
-      } else {
-        p1.playerAddress.transfer(game.pot / 2);
-        p2.playerAddress.transfer(game.pot / 2);
-      }
-      resetGame();
+  function closeGame() public playerInLeaderboard gameStarted {
+    Player storage p1 = players[playerIndex[game.firstPlayer]];
+    Player storage p2 = players[playerIndex[game.secondPlayer]];
+    p1.numDisputedGames++;
+    p2.numDisputedGames++;
+    if (game.pot == game.bet) {
+      p1.playerAddress.transfer(game.pot);
+    } else {
+      p1.playerAddress.transfer(game.pot / 2);
+      p2.playerAddress.transfer(game.pot / 2);
     }
+    resetGame();
   }
-  
+
   function payoutWinner(address _player) private playerInLeaderboard gameStarted {
     Player storage p1 = players[playerIndex[game.firstPlayer]];
     Player storage p2 = players[playerIndex[game.secondPlayer]];

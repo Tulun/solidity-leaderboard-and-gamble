@@ -555,6 +555,7 @@ describe("Leaderboard", () => {
   });
 
   describe("Alternate game ending conditions", () => {
+    let initialBalance, initialBalanceTwo;
     beforeEach( async () => {
       await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
         from: accounts[0],
@@ -571,6 +572,9 @@ describe("Leaderboard", () => {
         gas: '1000000'
       });
 
+      initialBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
+      initialBalanceTwo = await web3.eth.getBalance(accounts[1]) / 10 ** 18;
+
       await leaderboard.methods.createGame().send({
         from: accounts[0],
         gas: "1000000",
@@ -584,11 +588,46 @@ describe("Leaderboard", () => {
       });
     });
 
-    // it("Game can be closed after an hour has passed", async () => {
-    //   const time = await leaderboard.methods.closeGameIfTwoHourHasPassed().call();
+    it("Game can be closed", async () => {
+      await leaderboard.methods.closeGame().send({
+        from: accounts[0],
+        gas: "1000000"
+      });
 
-    //   console.log(time);
-    // })
+      const game = await leaderboard.methods.game().call();
+      assert.equal(game.id, 1);
+      assert.equal(game.firstPlayer, NULL_ADDRESS);
+      assert.equal(game.secondPlayer, NULL_ADDRESS);
+      assert.equal(game.bet, 0);
+      assert.equal(game.pot, 0);
+      assert.equal(game.winner, NULL_ADDRESS);
+      assert.equal(game.declaredWinnerFirstPlayer, "");
+      assert.equal(game.declaredWinnerSecondPlayer, "");
+      
+    });
+
+    it("Game closed returns 100% of funds for both players", async () => {
+      await leaderboard.methods.closeGame().send({
+        from: accounts[0],
+        gas: "1000000"
+      });
+
+      const finalBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
+      
+      // FB - IB should be approximately 1 ether as 1 ether is refunded.
+      const difference = finalBalance - initialBalance;
+      const withinZeroRange = 0.02 > difference && difference > -0.02; 
+      console.log('inital balance', initialBalance, 'fb', finalBalance);
+      assert(withinZeroRange);
+      
+      const finalBalanceTwo = await web3.eth.getBalance(accounts[1]) / 10 ** 18;
+      
+      // FB - IB should be approximately 1 ether as 1 ether is refunded.
+      const differenceTwo = finalBalanceTwo - initialBalanceTwo;
+      const withinZeroRangeTwo = 0.02 > differenceTwo && differenceTwo > -0.02; 
+  
+      assert(withinZeroRangeTwo);
+    })
   })
   
 });
