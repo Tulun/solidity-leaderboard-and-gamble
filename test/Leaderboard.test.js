@@ -551,7 +551,44 @@ describe("Leaderboard", () => {
   
       assert(withinOneRange);
     });
-    
+
   });
+
+  describe("Alternate game ending conditions", () => {
+    beforeEach( async () => {
+      await leaderboard.methods.addPlayerToLeaderboard("Jason").send({
+        from: accounts[0],
+        gas: '1000000'
+      });
+
+      await leaderboard.methods.addPlayerToLeaderboard("George").send({
+        from: accounts[1],
+        gas: '1000000'
+      });
+
+      await leaderboard.methods.addPlayerToLeaderboard("Tim").send({
+        from: accounts[2],
+        gas: '1000000'
+      });
+
+      await leaderboard.methods.createGame().send({
+        from: accounts[0],
+        gas: "1000000",
+        value: web3.utils.toWei("1", "ether")
+      })
+
+      await leaderboard.methods.addSecondPlayerToGame().send({
+        from: accounts[1],
+        gas: "1000000",
+        value: web3.utils.toWei("1", "ether")
+      });
+    });
+
+    // it("Game can be closed after an hour has passed", async () => {
+    //   const time = await leaderboard.methods.closeGameIfTwoHourHasPassed().call();
+
+    //   console.log(time);
+    // })
+  })
   
 });

@@ -27,6 +27,7 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     address winner;
     string declaredWinnerFirstPlayer;
     string declaredWinnerSecondPlayer;
+    uint startTime;
   }
     
   Player[] public players;
@@ -101,7 +102,8 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
       pot: msg.value,
       winner: address(0),
       declaredWinnerFirstPlayer: "",
-      declaredWinnerSecondPlayer: ""
+      declaredWinnerSecondPlayer: "",
+      startTime: now
     });
   }
 
@@ -156,8 +158,23 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
       }
       
     }
-
       
+  }
+
+  function closeGameIfTimedout() public playerInLeaderboard gameStarted {
+    if (now >= game.startTime + 1 hours) {
+      Player storage p1 = players[playerIndex[game.firstPlayer]];
+      Player storage p2 = players[playerIndex[game.secondPlayer]];
+      p1.numDisputedGames++;
+      p2.numDisputedGames++;
+      if (game.pot == game.bet) {
+        p1.playerAddress.transfer(game.pot);
+      } else {
+        p1.playerAddress.transfer(game.pot / 2);
+        p2.playerAddress.transfer(game.pot / 2);
+      }
+      resetGame();
+    }
   }
   
   function payoutWinner(address _player) private playerInLeaderboard gameStarted {
@@ -210,10 +227,10 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
   }
   
   function resetGame() private playerInLeaderboard gameStarted {
-      game.firstPlayer = address(0);
-      game.secondPlayer = address(0);
-      game.bet = 0;
-      game.pot = 0;
+    game.firstPlayer = address(0);
+    game.secondPlayer = address(0);
+    game.bet = 0;
+    game.pot = 0;
     game.declaredWinnerFirstPlayer = "";
     game.declaredWinnerSecondPlayer = "";
     gameInProgress = false;
