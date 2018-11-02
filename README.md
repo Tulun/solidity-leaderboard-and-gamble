@@ -14,6 +14,7 @@
 - [] Players can change their name
 - [] Owner can cancel games and return funds.
 - [] Reset all player stats (seasons)
+- [] Compatible with FUEL.
 
 ## V3
 - [ ] Round robin style tournaments
