@@ -24,10 +24,8 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     address secondPlayer;
     uint bet;
     uint pot;
-    address winner;
     string declaredWinnerFirstPlayer;
     string declaredWinnerSecondPlayer;
-    uint startTime;
   }
     
   Player[] public players;
@@ -100,10 +98,8 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
       secondPlayer: address(0),
       bet: msg.value,
       pot: msg.value,
-      winner: address(0),
       declaredWinnerFirstPlayer: "",
-      declaredWinnerSecondPlayer: "",
-      startTime: now
+      declaredWinnerSecondPlayer: ""
     });
   }
 

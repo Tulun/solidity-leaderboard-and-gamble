@@ -102,7 +102,6 @@ describe("Leaderboard", () => {
       assert.equal(game.secondPlayer, NULL_ADDRESS);
       assert.equal(game.bet, web3.utils.toWei("1", "ether"));
       assert.equal(game.pot, web3.utils.toWei("1", "ether"));
-      assert.equal(game.winner, NULL_ADDRESS);
     });
   })
   
@@ -396,7 +395,6 @@ describe("Leaderboard", () => {
       assert.equal(game.secondPlayer, NULL_ADDRESS);
       assert.equal(game.bet, 0);
       assert.equal(game.pot, 0);
-      assert.equal(game.winner, NULL_ADDRESS);
       assert.equal(game.declaredWinnerFirstPlayer, "");
       assert.equal(game.declaredWinnerSecondPlayer, "");
   
@@ -459,7 +457,6 @@ describe("Leaderboard", () => {
       assert.equal(game.secondPlayer, NULL_ADDRESS);
       assert.equal(game.bet, 0);
       assert.equal(game.pot, 0);
-      assert.equal(game.winner, NULL_ADDRESS);
       assert.equal(game.declaredWinnerFirstPlayer, "");
       assert.equal(game.declaredWinnerSecondPlayer, "");
   
@@ -523,7 +520,6 @@ describe("Leaderboard", () => {
       assert.equal(game.secondPlayer, NULL_ADDRESS);
       assert.equal(game.bet, 0);
       assert.equal(game.pot, 0);
-      assert.equal(game.winner, NULL_ADDRESS);
       assert.equal(game.declaredWinnerFirstPlayer, "");
       assert.equal(game.declaredWinnerSecondPlayer, "");
   
@@ -600,7 +596,6 @@ describe("Leaderboard", () => {
       assert.equal(game.secondPlayer, NULL_ADDRESS);
       assert.equal(game.bet, 0);
       assert.equal(game.pot, 0);
-      assert.equal(game.winner, NULL_ADDRESS);
       assert.equal(game.declaredWinnerFirstPlayer, "");
       assert.equal(game.declaredWinnerSecondPlayer, "");
       
