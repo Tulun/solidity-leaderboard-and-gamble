@@ -12,8 +12,6 @@ const provider = new HDWalletProvider(
 const web3 = new Web3(provider);
 const GWEI_TO_WEI = 10**9;
 
-
-
 const deploy = async () => {
   const accounts = await web3.eth.getAccounts();
   console.log('attempting to deploy from account', accounts[0]);
@@ -22,9 +20,9 @@ const deploy = async () => {
   console.log('c', count, 'nonce', nonce);
 
   const result = await new web3.eth.Contract(JSON.parse(compiledContract.interface))
-    .deploy({ data: `0x${compiledContract.bytecode}` })
+    .deploy({ data: `0x${compiledContract.bytecode}`, arguments:["Ping Pong"] })
     .send({ 
-      gas: "1000000", 
+      gas: "3000000", 
       from: accounts[0],
     });
 
