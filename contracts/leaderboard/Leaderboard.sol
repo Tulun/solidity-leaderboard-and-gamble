@@ -40,27 +40,27 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
   uint public totalNumPlayers;
   
   modifier onlyOwner() {
-    require(msg.sender == owner);
+    require(msg.sender == owner, "Only owner can call this function.");
     _;
   }
 
   modifier playerInLeaderboard() {
-    require(playersAdded[msg.sender]);
+    require(playersAdded[msg.sender], "Sender must be in leaderboard.");
     _;
   }
 
   modifier gameStarted() {
-    require(gameInProgress);
+    require(gameInProgress, "Game must be started.");
     _;
   }
 
   modifier noGame() {
-    require(!gameInProgress);
+    require(!gameInProgress, "Game must not be in progress.");
     _;
   }
   
   constructor(string _gameType) public {
-    require(testEmptyString(bytes(_gameType)));
+    require(testEmptyString(bytes(_gameType)), "Game type string must be given a value.");
     owner = msg.sender;
     gameType = _gameType;
     gameId = 0;
@@ -102,9 +102,9 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
   }
 
   function addSecondPlayerToGame() public payable playerInLeaderboard gameStarted {
-    require(msg.sender != game.firstPlayer);
-    require(game.secondPlayer == address(0));
-    require(msg.value == game.bet);
+    require(msg.sender != game.firstPlayer, "Sender is already first player.");
+    require(game.secondPlayer == address(0), "Second player has already signed up.");
+    require(msg.value == game.bet, "Value sent it must equal bet value.");
     
     game.secondPlayer = msg.sender;
     game.pot = game.pot + msg.value;
@@ -115,11 +115,11 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
   // The game will end up returning the individual funds.
   // _declaredWinner must be either: first or second or tie.
   function chooseWinner(string _declaredWinner) public playerInLeaderboard gameStarted {
-    require(msg.sender == game.firstPlayer || msg.sender == game.secondPlayer);
+    require(msg.sender == game.firstPlayer || msg.sender == game.secondPlayer, "Only players in game can call chooselWinner.");
     bool correctString = StringUtils.equal(_declaredWinner, "first") || 
       StringUtils.equal(_declaredWinner, "second") || 
       StringUtils.equal(_declaredWinner, "tie");
-    require(correctString);
+    require(correctString, "winner string must be first, second, or tie.");
 
     if (msg.sender == game.firstPlayer) {
       game.declaredWinnerFirstPlayer = _declaredWinner;
@@ -147,8 +147,8 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
         
       }
       
-      if (!(StringUtils.equal(game.declaredWinnerFirstPlayer, game.declaredWinnerSecondPlayer)) ) {
-          endGameWithDispute();
+      if (!(StringUtils.equal(game.declaredWinnerFirstPlayer, game.declaredWinnerSecondPlayer))) {
+        endGameWithDispute();
       }
       
     }
