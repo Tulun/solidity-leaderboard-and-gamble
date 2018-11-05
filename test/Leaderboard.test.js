@@ -8,6 +8,7 @@ let accounts, leaderboard;
 
 const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 
+// console.log(compiledLeaderboard.interface);
 beforeEach( async () => {
   // Get a list of all accounts;
   accounts = await web3.eth.getAccounts();

@@ -68,11 +68,9 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
   }
     
   function addPlayerToLeaderboard(string name) public {
-    bytes memory tempEmptyStringTest = bytes(name);
-    require(testEmptyString(bytes(name)));
-    require(tempEmptyStringTest.length > 0);
+    require(testEmptyString(bytes(name)), "Name string is empty.");
     // Make sure this particular address hasn't been added yet.
-    require(!playersAdded[msg.sender]);
+    require(!playersAdded[msg.sender], "Player has already been added.");
     
     playersAdded[msg.sender] = true;
     Player memory newPlayer = Player({
