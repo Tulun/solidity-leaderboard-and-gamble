@@ -38,6 +38,8 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
   bool public gameInProgress;
   string public gameType;
   uint public totalNumPlayers;
+
+  event UpdateProgress(bool _gameInProgress);
   
   modifier onlyOwner() {
     require(msg.sender == owner, "Only owner can call this function.");
@@ -99,6 +101,7 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
       declaredWinnerFirstPlayer: "",
       declaredWinnerSecondPlayer: ""
     });
+    emit UpdateProgress(gameInProgress);
   }
 
   function addSecondPlayerToGame() public payable playerInLeaderboard gameStarted {
