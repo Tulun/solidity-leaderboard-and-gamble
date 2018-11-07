@@ -22,12 +22,13 @@ const input = {
 }
 
 const output = solc.compile(input, 1);
-console.log('o', output, output.contracts);
+// console.log('o', output, output.contracts);
 const contracts = output.contracts;
 fs.ensureDirSync(buildPath);
 
 for (let contract in contracts) {
   const filename = contract.split(".")[0];
+  console.log(`interface for ${contract}: `, contracts[contract].interface)
   fs.outputJsonSync(
     path.resolve(buildPath, `${filename}.json`),
     contracts[contract]
@@ -35,3 +36,4 @@ for (let contract in contracts) {
 }
 
 console.log('compile successful!');
+console.log('Your ABIs might need to be updated on any frontend apps.')
