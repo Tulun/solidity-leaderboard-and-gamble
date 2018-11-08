@@ -10,6 +10,7 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
 
   // initialize variables
   struct Player {
+    uint id;
     string name;
     address playerAddress;
     uint wins;
@@ -40,6 +41,7 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
   uint public totalNumPlayers;
 
   event UpdateGameProgress(bool _gameInProgress);
+  event PlayerUpdated(uint _id);
   
   modifier onlyOwner() {
     require(msg.sender == owner, "Only owner can call this function.");
@@ -76,6 +78,7 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     
     playersAdded[msg.sender] = true;
     Player memory newPlayer = Player({
+      id: players.length,
       name: name,
       playerAddress: msg.sender,
       wins: 0,
@@ -87,6 +90,9 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     players.push(newPlayer);
     playerIndex[msg.sender] = players.length - 1;
     totalNumPlayers++;
+
+    // Send up the index so dApps can look up the new user.
+    emit PlayerUpdated(players.length - 1);
   }
     
   function createGame() public payable playerInLeaderboard noGame {
@@ -187,6 +193,9 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
       p2.wins++;
     }
     
+    emit PlayerUpdated(p1.id);
+    emit PlayerUpdated(p2.id);
+
     resetGame();
   }
   
@@ -196,6 +205,9 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     p1.ties++;
     p2.ties++;
     
+    emit PlayerUpdated(p1.id);
+    emit PlayerUpdated(p2.id);
+
     refundPlayers();
     resetGame();
   }
@@ -207,6 +219,9 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     p1.numDisputedGames++;
     p2.numDisputedGames++;
     
+    emit PlayerUpdated(p1.id);
+    emit PlayerUpdated(p2.id);
+
     refundPlayers();
     resetGame();
   }
