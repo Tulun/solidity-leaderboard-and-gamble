@@ -42,7 +42,8 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
 
   event UpdateGameProgress(bool _gameInProgress);
   event PlayerUpdated(uint _id);
-  
+  event GameUpdated(uint _id);
+
   modifier onlyOwner() {
     require(msg.sender == owner, "Only owner can call this function.");
     _;
@@ -118,6 +119,7 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     
     game.secondPlayer = msg.sender;
     game.pot = game.pot + msg.value;
+    emit GameUpdated(game.id);
   }
 
     // There is no technical oracle on this contract -- this is mostly a handshake deal.
