@@ -197,7 +197,6 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     
     emit PlayerUpdated(p1.id);
     emit PlayerUpdated(p2.id);
-
     resetGame();
   }
   
@@ -247,6 +246,9 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     game.declaredWinnerFirstPlayer = "";
     game.declaredWinnerSecondPlayer = "";
     gameInProgress = false;
+    
+    emit GameUpdated(game.id);
+    emit UpdateGameProgress(false);
   }
 
   function testEmptyString(bytes str) private pure returns (bool) {
