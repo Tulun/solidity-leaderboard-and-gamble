@@ -22,7 +22,7 @@ const deploy = async () => {
   const result = await new web3.eth.Contract(JSON.parse(compiledContract.interface))
     .deploy({ data: `0x${compiledContract.bytecode}`, arguments:["Ping Pong"] })
     .send({ 
-      gas: "3000000", 
+      gas: "4000000", 
       from: accounts[0],
     });
 

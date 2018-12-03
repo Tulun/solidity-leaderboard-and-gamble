@@ -88,6 +88,7 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
       numDisputedGames: 0
     });
     
+    player[msg.sender] = newPlayer;
     players.push(newPlayer);
     playerIndex[msg.sender] = players.length - 1;
     totalNumPlayers++;
@@ -108,8 +109,9 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
       declaredWinnerFirstPlayer: "",
       declaredWinnerSecondPlayer: ""
     });
-    
+
     emit UpdateGameProgress(gameInProgress);
+    emit GameUpdated(game.id);
   }
 
   function addSecondPlayerToGame() public payable playerInLeaderboard gameStarted {
@@ -140,6 +142,8 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     if (msg.sender == game.secondPlayer) {
       game.declaredWinnerSecondPlayer = _declaredWinner;  
     }
+
+    emit GameUpdated(game.id);
     
     // If both strings aren't empty, check if they match or not.
     if (testEmptyString(bytes(game.declaredWinnerFirstPlayer)) &&
@@ -172,6 +176,11 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     Player storage p2 = players[playerIndex[game.secondPlayer]];
     p1.numDisputedGames++;
     p2.numDisputedGames++;
+
+    // Update players in mapping.
+    player[p1.playerAddress] = p1;
+    player[p2.playerAddress] = p2;
+
     if (game.pot == game.bet) {
       p1.playerAddress.transfer(game.pot);
     } else {
@@ -194,7 +203,11 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
       p1.losses++;
       p2.wins++;
     }
-    
+
+    // Update players in mapping.
+    player[p1.playerAddress] = p1;
+    player[p2.playerAddress] = p2;
+
     emit PlayerUpdated(p1.id);
     emit PlayerUpdated(p2.id);
     resetGame();
@@ -206,6 +219,10 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     p1.ties++;
     p2.ties++;
     
+    // Update players in mapping.
+    player[p1.playerAddress] = p1;
+    player[p2.playerAddress] = p2;
+
     emit PlayerUpdated(p1.id);
     emit PlayerUpdated(p2.id);
 
@@ -220,6 +237,10 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     p1.numDisputedGames++;
     p2.numDisputedGames++;
     
+    // Update players in mapping.
+    player[p1.playerAddress] = p1;
+    player[p2.playerAddress] = p2;
+
     emit PlayerUpdated(p1.id);
     emit PlayerUpdated(p2.id);
 
@@ -246,9 +267,9 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     game.declaredWinnerFirstPlayer = "";
     game.declaredWinnerSecondPlayer = "";
     gameInProgress = false;
-    
+
     emit GameUpdated(game.id);
-    emit UpdateGameProgress(false);
+    emit UpdateGameProgress(gameInProgress);
   }
 
   function testEmptyString(bytes str) private pure returns (bool) {
