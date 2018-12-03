@@ -1,11 +1,9 @@
 pragma solidity ^0.4.24;
 
 import "./SafeMath.sol";
-import "./StringUtils.sol";
 import "./ReentrancyGuard.sol";
 
-
-contract Leaderboard is ReentrancyGuard, StringUtils {
+contract Leaderboard is ReentrancyGuard {
   using SafeMath for uint;
 
   // initialize variables
@@ -25,10 +23,18 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     address secondPlayer;
     uint bet;
     uint pot;
-    string declaredWinnerFirstPlayer;
-    string declaredWinnerSecondPlayer;
+    uint declaredWinnerFirstPlayer;
+    uint declaredWinnerSecondPlayer;
   }
-    
+
+  enum WinnerChoices {
+    Default,
+    First,
+    Second,
+    Tie
+  }
+  
+  WinnerChoices public choice;
   Player[] public players;
   Game public game;
   address private owner;
@@ -70,6 +76,11 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     gameType = _gameType;
     gameId = 0;
     gameInProgress = false;
+  }
+
+  // Revert transactions on default
+  function() public payable {
+    revert();
   }
     
   function addPlayerToLeaderboard(string name) public {
@@ -128,12 +139,9 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
   // Both players will have to send a message in declaring who won. If there is a dispute
   // The game will end up returning the individual funds.
   // _declaredWinner must be either: first or second or tie.
-  function chooseWinner(string _declaredWinner) public playerInLeaderboard gameStarted {
+  function chooseWinner(uint _declaredWinner) public playerInLeaderboard gameStarted {
     require(msg.sender == game.firstPlayer || msg.sender == game.secondPlayer, "Only players in game can call chooselWinner.");
-    bool correctString = StringUtils.equal(_declaredWinner, "first") || 
-      StringUtils.equal(_declaredWinner, "second") || 
-      StringUtils.equal(_declaredWinner, "tie");
-    require(correctString, "winner string must be first, second, or tie.");
+    require(_declaredWinner > 0 && _declaredWinner < 4);
 
     if (msg.sender == game.firstPlayer) {
       game.declaredWinnerFirstPlayer = _declaredWinner;
@@ -146,24 +154,23 @@ contract Leaderboard is ReentrancyGuard, StringUtils {
     emit GameUpdated(game.id);
     
     // If both strings aren't empty, check if they match or not.
-    if (testEmptyString(bytes(game.declaredWinnerFirstPlayer)) &&
-     testEmptyString(bytes(game.declaredWinnerSecondPlayer))) {
 
-      if (StringUtils.equal(game.declaredWinnerFirstPlayer, game.declaredWinnerSecondPlayer)) {
-        if (StringUtils.equal(game.declaredWinnerFirstPlayer, "first")) {
+
+    if (game.declaredWinnerFirstPlayer != choice.Default && game.declaredWinnerSecondPlayer != choice.Default) {
+
+      if (game.declaredWinnerFirstPlayer == game.declaredWinnerSecondPlayer) {
+        if (game.declaredWinnerFirstPlayer == choice.First) {
           payoutWinner(game.firstPlayer);
         }
-        if (StringUtils.equal(game.declaredWinnerFirstPlayer, "second")) {
+
+        if (game.declaredWinnerFirstPlayer == choice.Second) {
           payoutWinner(game.secondPlayer);
         }
         
-        if (StringUtils.equal(game.declaredWinnerFirstPlayer, "tie")) {
+        if (game.declaredWinnerFirstPlayer == choice.Tie) {
           endGameInTie();
         }
-        
-      }
-      
-      if (!(StringUtils.equal(game.declaredWinnerFirstPlayer, game.declaredWinnerSecondPlayer))) {
+      } else {
         endGameWithDispute();
       }
       
