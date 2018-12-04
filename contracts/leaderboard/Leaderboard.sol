@@ -23,18 +23,17 @@ contract Leaderboard is ReentrancyGuard {
     address secondPlayer;
     uint bet;
     uint pot;
-    uint declaredWinnerFirstPlayer;
-    uint declaredWinnerSecondPlayer;
+    WinnerChoices declaredWinnerFirstPlayer;
+    WinnerChoices declaredWinnerSecondPlayer;
   }
 
   enum WinnerChoices {
-    Default,
+    Undefined,
     First,
     Second,
     Tie
   }
-  
-  WinnerChoices public choice;
+
   Player[] public players;
   Game public game;
   address private owner;
@@ -117,8 +116,8 @@ contract Leaderboard is ReentrancyGuard {
       secondPlayer: address(0),
       bet: msg.value,
       pot: msg.value,
-      declaredWinnerFirstPlayer: "",
-      declaredWinnerSecondPlayer: ""
+      declaredWinnerFirstPlayer: WinnerChoices.Undefined,
+      declaredWinnerSecondPlayer: WinnerChoices.Undefined
     });
 
     emit UpdateGameProgress(gameInProgress);
@@ -142,13 +141,26 @@ contract Leaderboard is ReentrancyGuard {
   function chooseWinner(uint _declaredWinner) public playerInLeaderboard gameStarted {
     require(msg.sender == game.firstPlayer || msg.sender == game.secondPlayer, "Only players in game can call chooselWinner.");
     require(_declaredWinner > 0 && _declaredWinner < 4);
+    
+    WinnerChoices choice;
+
+    if (_declaredWinner == 1) {
+      choice = WinnerChoices.First;
+    } 
+    if (_declaredWinner == 2) {
+      choice = WinnerChoices.Second;
+    }
+
+    if (_declaredWinner == 3) {
+      choice = WinnerChoices.Tie;
+    }
 
     if (msg.sender == game.firstPlayer) {
-      game.declaredWinnerFirstPlayer = _declaredWinner;
+      game.declaredWinnerFirstPlayer = choice;
     }
     
     if (msg.sender == game.secondPlayer) {
-      game.declaredWinnerSecondPlayer = _declaredWinner;  
+      game.declaredWinnerSecondPlayer = choice;  
     }
 
     emit GameUpdated(game.id);
@@ -156,18 +168,18 @@ contract Leaderboard is ReentrancyGuard {
     // If both strings aren't empty, check if they match or not.
 
 
-    if (game.declaredWinnerFirstPlayer != choice.Default && game.declaredWinnerSecondPlayer != choice.Default) {
+    if (game.declaredWinnerFirstPlayer != WinnerChoices.Undefined && game.declaredWinnerSecondPlayer != WinnerChoices.Undefined) {
 
       if (game.declaredWinnerFirstPlayer == game.declaredWinnerSecondPlayer) {
-        if (game.declaredWinnerFirstPlayer == choice.First) {
+        if (game.declaredWinnerFirstPlayer == WinnerChoices.First) {
           payoutWinner(game.firstPlayer);
         }
 
-        if (game.declaredWinnerFirstPlayer == choice.Second) {
+        if (game.declaredWinnerFirstPlayer == WinnerChoices.Second) {
           payoutWinner(game.secondPlayer);
         }
         
-        if (game.declaredWinnerFirstPlayer == choice.Tie) {
+        if (game.declaredWinnerFirstPlayer == WinnerChoices.Tie) {
           endGameInTie();
         }
       } else {
@@ -271,8 +283,8 @@ contract Leaderboard is ReentrancyGuard {
     game.secondPlayer = address(0);
     game.bet = 0;
     game.pot = 0;
-    game.declaredWinnerFirstPlayer = "";
-    game.declaredWinnerSecondPlayer = "";
+    game.declaredWinnerFirstPlayer = WinnerChoices.Undefined;
+    game.declaredWinnerSecondPlayer = WinnerChoices.Undefined;
     gameInProgress = false;
 
     emit GameUpdated(game.id);

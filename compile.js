@@ -9,20 +9,18 @@ fs.removeSync(buildPath);
 
 const leaderboardPath = path.resolve(__dirname, "contracts", "leaderboard", "Leaderboard.sol");
 const safeMathPath = path.resolve(__dirname, "contracts", "leaderboard", "SafeMath.sol");
-const stringUtilsPath = path.resolve(__dirname, "contracts", "leaderboard", "StringUtils.sol");
 const reentrancyGuardPath = path.resolve(__dirname, "contracts", "leaderboard", "ReentrancyGuard.sol");
 
 const input = {
   sources: {
     "Leaderboard.sol": fs.readFileSync(leaderboardPath, "utf8"),
     "SafeMath.sol": fs.readFileSync(safeMathPath, "utf8"),
-    "StringUtils.sol": fs.readFileSync(stringUtilsPath, "utf8"),
     "ReentrancyGuard.sol": fs.readFileSync(reentrancyGuardPath, "utf8")
   }
 }
 
 const output = solc.compile(input, 1);
-// console.log('o', output, output.contracts);
+console.log('o', output, output.contracts);
 const contracts = output.contracts;
 fs.ensureDirSync(buildPath);
 
