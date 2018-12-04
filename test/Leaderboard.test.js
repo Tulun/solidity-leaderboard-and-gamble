@@ -248,58 +248,58 @@ describe("Leaderboard", () => {
 
     it("Allows first player to choose a winner", async () => {
 
-      await leaderboard.methods.chooseWinner("first").send({
+      await leaderboard.methods.chooseWinner(1).send({
         from: accounts[0],
         gas: "1000000",
       });
   
       const game = await leaderboard.methods.game().call();
-      assert.equal(game.declaredWinnerFirstPlayer, "first");
+      assert.equal(game.declaredWinnerFirstPlayer, 1);
     });
 
     it("Allows second player to choose a winner", async () => {
-      await leaderboard.methods.chooseWinner("second").send({
+      await leaderboard.methods.chooseWinner(2).send({
         from: accounts[1],
         gas: "1000000",
       });
   
       const game = await leaderboard.methods.game().call();
-      assert.equal(game.declaredWinnerSecondPlayer, "second");
+      assert.equal(game.declaredWinnerSecondPlayer, 2);
     });
 
     it("Allows first, second, or tie as the chooseWinner string", async() => {
-      await leaderboard.methods.chooseWinner("first").send({
+      await leaderboard.methods.chooseWinner(1).send({
         from: accounts[0],
         gas: "1000000",
       });
   
       let game = await leaderboard.methods.game().call();
-      assert.equal(game.declaredWinnerFirstPlayer, "first");
+      assert.equal(game.declaredWinnerFirstPlayer, 1);
   
-      await leaderboard.methods.chooseWinner("second").send({
+      await leaderboard.methods.chooseWinner(2).send({
         from: accounts[0],
         gas: "1000000",
       });
   
       game = await leaderboard.methods.game().call();
-      assert.equal(game.declaredWinnerFirstPlayer, "second");
+      assert.equal(game.declaredWinnerFirstPlayer, 2);
   
-      await leaderboard.methods.chooseWinner("tie").send({
+      await leaderboard.methods.chooseWinner(3).send({
         from: accounts[0],
         gas: "1000000",
       });
   
       game = await leaderboard.methods.game().call();
-      assert.equal(game.declaredWinnerFirstPlayer, "tie");
+      assert.equal(game.declaredWinnerFirstPlayer, 3);
     });
 
     it("Prevents a user from sending in an incorrect string to chooseWinner", async () => {
       try {
-        await leaderboard.methods.chooseWinner("third").send({
+        await leaderboard.methods.chooseWinner(0).send({
           from: accounts[0],
           gas: "1000000",
         });
-        assert.fail("A string that isn't first or second or tie was accepted.")
+        assert.fail("An enum that wasn't 1, 2, or 3 was accepted.")
       }
       catch(err) {
         assert(err);
@@ -307,14 +307,14 @@ describe("Leaderboard", () => {
     });
   
     it("Prevents a user who is not playing the game from changing the winner", async () => {
-      await leaderboard.methods.chooseWinner("first").send({
+      await leaderboard.methods.chooseWinner(1).send({
         from: accounts[0],
         gas: "1000000",
       });
   
       // From a player not even on the board
       try {
-        await leaderboard.methods.chooseWinner("first").send({
+        await leaderboard.methods.chooseWinner(2).send({
           from: accounts[3],
           gas: "1000000"
         });
@@ -331,7 +331,7 @@ describe("Leaderboard", () => {
       });
   
       try {
-        await leaderboard.methods.chooseWinner("first").send({
+        await leaderboard.methods.chooseWinner(2).send({
           from: accounts[3],
           gas: "1000000"
         });
