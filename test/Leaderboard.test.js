@@ -346,12 +346,12 @@ describe("Leaderboard", () => {
 
       const initialBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
   
-      await leaderboard.methods.chooseWinner("first").send({
+      await leaderboard.methods.chooseWinner(1).send({
         from: accounts[0],
         gas: "1000000",
       });
   
-      await leaderboard.methods.chooseWinner("first").send({
+      await leaderboard.methods.chooseWinner(1).send({
         from: accounts[1],
         gas: "1000000",
       });
@@ -364,12 +364,12 @@ describe("Leaderboard", () => {
     it("Pays out the secondPlayer when both users agree on secondPlayer", async () => {
       const initialBalance = await web3.eth.getBalance(accounts[1]) / 10 ** 18;
   
-      await leaderboard.methods.chooseWinner("second").send({
+      await leaderboard.methods.chooseWinner(2).send({
         from: accounts[0],
         gas: "1000000",
       });
   
-      await leaderboard.methods.chooseWinner("second").send({
+      await leaderboard.methods.chooseWinner(2).send({
         from: accounts[1],
         gas: "1000000",
       });
@@ -380,12 +380,12 @@ describe("Leaderboard", () => {
     });
 
     it("Game returns to initial state after payout", async () => {
-      await leaderboard.methods.chooseWinner("second").send({
+      await leaderboard.methods.chooseWinner(2).send({
         from: accounts[0],
         gas: "1000000",
       });
   
-      await leaderboard.methods.chooseWinner("second").send({
+      await leaderboard.methods.chooseWinner(2).send({
         from: accounts[1],
         gas: "1000000",
       });
@@ -396,20 +396,20 @@ describe("Leaderboard", () => {
       assert.equal(game.secondPlayer, NULL_ADDRESS);
       assert.equal(game.bet, 0);
       assert.equal(game.pot, 0);
-      assert.equal(game.declaredWinnerFirstPlayer, "");
-      assert.equal(game.declaredWinnerSecondPlayer, "");
+      assert.equal(game.declaredWinnerFirstPlayer, 0);
+      assert.equal(game.declaredWinnerSecondPlayer, 0);
   
       const gameInProgress = await leaderboard.methods.gameInProgress().call();
       assert.equal(gameInProgress, false);
     });
 
     it("After payout, winner gets a win added, loser gets a loss added", async () => {
-      await leaderboard.methods.chooseWinner("second").send({
+      await leaderboard.methods.chooseWinner(2).send({
         from: accounts[0],
         gas: "1000000",
       });
   
-      await leaderboard.methods.chooseWinner("second").send({
+      await leaderboard.methods.chooseWinner(2).send({
         from: accounts[1],
         gas: "1000000",
       });
@@ -424,12 +424,12 @@ describe("Leaderboard", () => {
     });
 
     it("If both members agree it's a tie, they both get a tie added to their stats", async () => {
-      await leaderboard.methods.chooseWinner("tie").send({
+      await leaderboard.methods.chooseWinner(3).send({
         from: accounts[0],
         gas: "1000000",
       });
   
-      await leaderboard.methods.chooseWinner("tie").send({
+      await leaderboard.methods.chooseWinner(3).send({
         from: accounts[1],
         gas: "1000000",
       });
@@ -442,12 +442,12 @@ describe("Leaderboard", () => {
     });
 
     it("In the event of a tie, game should be reset", async () => {
-      await leaderboard.methods.chooseWinner("tie").send({
+      await leaderboard.methods.chooseWinner(3).send({
         from: accounts[0],
         gas: "1000000",
       });
   
-      await leaderboard.methods.chooseWinner("tie").send({
+      await leaderboard.methods.chooseWinner(3).send({
         from: accounts[1],
         gas: "1000000",
       });
@@ -458,8 +458,8 @@ describe("Leaderboard", () => {
       assert.equal(game.secondPlayer, NULL_ADDRESS);
       assert.equal(game.bet, 0);
       assert.equal(game.pot, 0);
-      assert.equal(game.declaredWinnerFirstPlayer, "");
-      assert.equal(game.declaredWinnerSecondPlayer, "");
+      assert.equal(game.declaredWinnerFirstPlayer, 0);
+      assert.equal(game.declaredWinnerSecondPlayer, 0);
   
       const gameInProgress = await leaderboard.methods.gameInProgress().call();
       assert.equal(gameInProgress, false);
@@ -467,12 +467,12 @@ describe("Leaderboard", () => {
 
     it("Refunds the user in the event of a tie", async () => {
       const initialBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
-      await leaderboard.methods.chooseWinner("tie").send({
+      await leaderboard.methods.chooseWinner(3).send({
         from: accounts[0],
         gas: "1000000",
       });
   
-      await leaderboard.methods.chooseWinner("tie").send({
+      await leaderboard.methods.chooseWinner(3).send({
         from: accounts[1],
         gas: "1000000",
       });
@@ -487,12 +487,12 @@ describe("Leaderboard", () => {
     })
 
     it("If both members disagree on outcome, they get a disputed outcome added to their stats", async () => {
-      await leaderboard.methods.chooseWinner("first").send({
+      await leaderboard.methods.chooseWinner(1).send({
         from: accounts[0],
         gas: "1000000",
       });
   
-      await leaderboard.methods.chooseWinner("second").send({
+      await leaderboard.methods.chooseWinner(2).send({
         from: accounts[1],
         gas: "1000000",
       });
@@ -505,12 +505,12 @@ describe("Leaderboard", () => {
     });
 
     it("In the event of a dispute, game should be reset", async () => {
-      await leaderboard.methods.chooseWinner("first").send({
+      await leaderboard.methods.chooseWinner(1).send({
         from: accounts[0],
         gas: "1000000",
       });
   
-      await leaderboard.methods.chooseWinner("tie").send({
+      await leaderboard.methods.chooseWinner(3).send({
         from: accounts[1],
         gas: "1000000",
       });
@@ -521,8 +521,8 @@ describe("Leaderboard", () => {
       assert.equal(game.secondPlayer, NULL_ADDRESS);
       assert.equal(game.bet, 0);
       assert.equal(game.pot, 0);
-      assert.equal(game.declaredWinnerFirstPlayer, "");
-      assert.equal(game.declaredWinnerSecondPlayer, "");
+      assert.equal(game.declaredWinnerFirstPlayer, 0);
+      assert.equal(game.declaredWinnerSecondPlayer, 0);
   
       const gameInProgress = await leaderboard.methods.gameInProgress().call();
       assert.equal(gameInProgress, false);
@@ -530,12 +530,12 @@ describe("Leaderboard", () => {
 
     it("Refunds the user in the event of a dispute", async () => {
       const initialBalance = await web3.eth.getBalance(accounts[0]) / 10 ** 18;
-      await leaderboard.methods.chooseWinner("second").send({
+      await leaderboard.methods.chooseWinner(2).send({
         from: accounts[0],
         gas: "1000000",
       });
   
-      await leaderboard.methods.chooseWinner("first").send({
+      await leaderboard.methods.chooseWinner(1).send({
         from: accounts[1],
         gas: "1000000",
       });
@@ -597,8 +597,8 @@ describe("Leaderboard", () => {
       assert.equal(game.secondPlayer, NULL_ADDRESS);
       assert.equal(game.bet, 0);
       assert.equal(game.pot, 0);
-      assert.equal(game.declaredWinnerFirstPlayer, "");
-      assert.equal(game.declaredWinnerSecondPlayer, "");
+      assert.equal(game.declaredWinnerFirstPlayer, 0);
+      assert.equal(game.declaredWinnerSecondPlayer, 0);
       
     });
 
